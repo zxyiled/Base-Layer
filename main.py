@@ -2,28 +2,12 @@ import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-
 class Matrix:
-    """Representa una matriz numérica con operaciones matriciales.
-
-    Almacena los datos como una lista de listas y proporciona operaciones
-    matriciales básicas (suma, resta, multiplicación, etc.) y avanzadas
-    (determinante, inversa, adjunta, ...).
-    """
 
     MAX_DIMENSION = 20
 
     def __init__(self, data):
-        """Crea una matriz a partir de una lista de listas.
 
-        Args:
-            data: Lista de listas con los valores de cada fila.
-
-        Raises:
-            ValueError: Si la matriz está vacía, si las filas tienen
-                longitudes diferentes o si alguna dimensión supera el
-                límite permitido (MAX_DIMENSION).
-        """
         if not data or not data[0]:
             raise ValueError("La matriz no puede estar vacía.")
         columns = len(data[0])
@@ -40,30 +24,22 @@ class Matrix:
         self.columns = len(self.data[0])
 
     def __str__(self):
-        """Devuelve la matriz formateada como texto alineado por columnas."""
+
         return "\n".join("\t".join(f"{x:8.4f}" for x in row) for row in self.data)
 
     def _validate_size(self, other):
-        """Valida que otra matriz tenga las mismas dimensiones (alto/ancho).
 
-        Raises:
-            ValueError: Si las dimensiones no coinciden.
-        """
         if self.rows != other.rows or self.columns != other.columns:
             raise ValueError(
                 f"Dimensiones incompatibles: ({self.rows}x{self.columns}) vs ({other.rows}x{other.columns})"
             )
 
     def is_square(self):
-        """Indica si la matriz es cuadrada (mismo número de filas y columnas)."""
+
         return self.rows == self.columns
 
     def add(self, other):
-        """Suma elemento a elemento esta matriz con otra.
 
-        Raises:
-            ValueError: Si las dimensiones no coinciden.
-        """
         self._validate_size(other)
         return Matrix([
             [self.data[i][j] + other.data[i][j] for j in range(self.columns)]
@@ -71,11 +47,7 @@ class Matrix:
         ])
 
     def subtract(self, other):
-        """Resta elemento a elemento otra matriz a esta.
 
-        Raises:
-            ValueError: Si las dimensiones no coinciden.
-        """
         self._validate_size(other)
         return Matrix([
             [self.data[i][j] - other.data[i][j] for j in range(self.columns)]
@@ -83,12 +55,7 @@ class Matrix:
         ])
 
     def multiply(self, other):
-        """Multiplicación matricial (producto fila × columna).
 
-        Raises:
-            ValueError: Si las dimensiones no son compatibles
-                (columnas de esta != filas de la otra).
-        """
         if self.columns != other.rows:
             raise ValueError(
                 f"Dimensiones incompatibles para multiplicación: "
@@ -101,58 +68,34 @@ class Matrix:
         return Matrix(result)
 
     def scalar_multiply(self, scalar):
-        """Multiplica todos los elementos de la matriz por un escalar."""
+
         return Matrix([
             [self.data[i][j] * scalar for j in range(self.columns)]
             for i in range(self.rows)
         ])
 
     def transpose(self):
-        """Devuelve la transpuesta de la matriz (intercambia filas por columnas)."""
+ 
         return Matrix([
             [self.data[i][j] for i in range(self.rows)]
             for j in range(self.columns)
         ])
 
     def trace(self):
-        """Calcula la traza: suma de los elementos de la diagonal principal.
 
-        Raises:
-            ValueError: Si la matriz no es cuadrada.
-        """
         if not self.is_square():
             raise ValueError("La matriz debe ser cuadrada para calcular la traza.")
         return sum(self.data[i][i] for i in range(self.rows))
 
     def determinant(self):
-        """Calcula el determinante mediante descomposición LU (O(n³)).
 
-        Usa eliminación gaussiana con pivoteo parcial, por lo que es rápida
-        incluso para matrices de hasta MAX_DIMENSION (20x20). A diferencia de
-        la expansión de cofactores (O(n!)), no se vuelve inviable al crecer.
-
-        Raises:
-            ValueError: Si la matriz no es cuadrada.
-        """
         if not self.is_square():
             raise ValueError("La matriz debe ser cuadrada para calcular el determinante.")
         return self._determinant_lu(self.data)
 
     @staticmethod
     def _determinant_lu(matrix):
-        """Función auxiliar para calcular el determinante por descomposición LU.
 
-        Aplica eliminación gaussiana con pivoteo parcial sobre una copia. El
-        determinante es el producto de la diagonal de U ajustado por el signo
-        de los intercambios de filas. Es un método estático porque no depende
-        del estado de ninguna instancia.
-
-        Args:
-            matrix: Lista de listas (datos) de la matriz cuadrada.
-
-        Returns:
-            El determinante como número flotante.
-        """
         n = len(matrix)
         work = [row[:] for row in matrix]
         det = 1.0
@@ -172,14 +115,7 @@ class Matrix:
         return det
 
     def adjoint(self):
-        """Calcula la matriz adjunta (transpuesta de la matriz de cofactores).
-
-        Internamente usa el determinante por descomposición LU (O(n³)), por lo
-        que también es eficiente con matrices grandes.
-
-        Raises:
-            ValueError: Si la matriz no es cuadrada.
-        """
+ 
         if not self.is_square():
             raise ValueError("La matriz debe ser cuadrada para calcular la adjunta.")
         n = self.rows
@@ -196,12 +132,7 @@ class Matrix:
         return Matrix(cofactors).transpose()
 
     def inverse(self):
-        """Calcula la matriz inversa mediante eliminación de Gauss-Jordan.
 
-        Raises:
-            ValueError: Si la matriz no es cuadrada, es singular
-                (determinante = 0) o no tiene pivote válido.
-        """
         if not self.is_square():
             raise ValueError("La matriz debe ser cuadrada para calcular la inversa.")
         det = self.determinant()
@@ -234,15 +165,7 @@ class Matrix:
 
 
 def register_history(operation, result_str):
-    """Registra una operación en el archivo de historial (historial.txt).
 
-    Args:
-        operation: Descripción textual de la operación realizada.
-        result_str: Representación del resultado (matriz o escalar).
-
-    Notes:
-        Los errores de escritura se imprimen pero no detienen el programa.
-    """
     try:
         with open("historial.txt", "a", encoding="utf-8") as f:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -254,21 +177,7 @@ def register_history(operation, result_str):
 
 
 def parse_matrix_text(text):
-    """Convierte texto de un cuadro Tkinter en un objeto Matrix.
 
-    Cada línea del texto representa una fila, y los valores se separan por
-    espacios o tabulaciones.
-
-    Args:
-        text: Cadena con los valores de la matriz.
-
-    Returns:
-        Un objeto Matrix.
-
-    Raises:
-        ValueError: Si el texto está vacío o las filas no tienen el mismo
-            número de columnas.
-    """
     if not text.strip():
         raise ValueError("El campo de la matriz está vacío.")
     rows = []
@@ -290,11 +199,6 @@ def parse_matrix_text(text):
 
 
 class MatrixCalculatorApp:
-    """Interfaz gráfica (Tkinter) de la calculadora de matrices.
-
-    Permite introducir las matrices A y B, elegir una operación mediante
-    botones, mostrar el resultado y consultar el historial.
-    """
 
     # (Etiqueta del botón, nombre del método de Matrix, ¿requiere B?)
     OPERATIONS = [
@@ -310,11 +214,7 @@ class MatrixCalculatorApp:
     ]
 
     def __init__(self, root):
-        """Construye la ventana principal y la centra en pantalla.
 
-        Args:
-            root: Ventana raíz de Tkinter (tk.Tk()).
-        """
         self.root = root
         self.root.title("Calculadora de Matrices")
         self.root.resizable(False, False)
@@ -322,7 +222,7 @@ class MatrixCalculatorApp:
         self.root.after(50, self._center_on_screen)
 
     def _center_on_screen(self):
-        """Centra la ventana en la pantalla tras calcular su tamaño real."""
+
         self.root.update_idletasks()
         w = self.root.winfo_reqwidth()
         h = self.root.winfo_reqheight()
@@ -333,7 +233,7 @@ class MatrixCalculatorApp:
         self.root.geometry(f"{w}x{h}+{x}+{y}")
 
     def _build_ui(self):
-        """Construye todos los widgets de la interfaz (entradas, botones, resultado)."""
+
         main_frame = ttk.Frame(self.root, padding=10)
         main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -381,27 +281,20 @@ class MatrixCalculatorApp:
         self.result_text.pack(fill=tk.BOTH, expand=True)
 
     def _get_matrices(self):
-        """Lee y convierte los textos de A y B (sin usar). Método de utilidad."""
+
         a = parse_matrix_text(self.text_a.get("1.0", tk.END))
         b = parse_matrix_text(self.text_b.get("1.0", tk.END))
         return a, b
 
     def _show_result(self, text):
-        """Reemplaza el contenido del área de resultado con el texto dado."""
+
         self.result_text.config(state=tk.NORMAL)
         self.result_text.delete("1.0", tk.END)
         self.result_text.insert(tk.END, text)
         self.result_text.config(state=tk.DISABLED)
 
     def _execute(self, op_index):
-        """Ejecuta la operación seleccionada según su índice en OPERATIONS.
 
-        Lee las matrices, aplica el método correspondiente, muestra y registra
-        el resultado. Los errores se muestran en el área de resultado.
-
-        Args:
-            op_index: Índice de la operación dentro de self.OPERATIONS.
-        """
         label, method_name, needs_b = self.OPERATIONS[op_index]
         try:
             a = parse_matrix_text(self.text_a.get("1.0", tk.END))
@@ -442,7 +335,7 @@ class MatrixCalculatorApp:
             self._show_result(f"Error inesperado: {e}")
 
     def _show_history(self):
-        """Abre una ventana emergente con el contenido del historial.txt."""
+ 
         win = tk.Toplevel(self.root)
         win.title("Historial de Operaciones")
         win.geometry("500x400")
