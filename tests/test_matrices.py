@@ -8,12 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 
 def _ensure_headless_tk():
-    """Permite importar main incluso sin un entorno Tk instalado (CI/headless).
 
-    Si tkinter no es importable, se inyectan módulos ficticios suficientes
-    para que la definición del módulo main no falle. En un entorno normal
-    con Tk instalado esto no tiene efecto.
-    """
     try:
         import tkinter  # noqa: F401
         return
@@ -54,11 +49,10 @@ def _ensure_headless_tk():
 
 _ensure_headless_tk()
 
-from main import Matrix, parse_matrix_text, register_history  # noqa: E402
+from matrix_calculator import Matrix, parse_matrix_text, register_history  # noqa: E402
 
 
 class TestMatrixCreation(unittest.TestCase):
-    """Pruebas de construcción y validación de la matriz."""
 
     def test_creation(self):
         m = Matrix([[1, 2], [3, 4]])
@@ -107,7 +101,6 @@ class TestMatrixCreation(unittest.TestCase):
 
 
 class TestStr(unittest.TestCase):
-    """Pruebas de la representación en texto de la matriz."""
 
     def test_str_contains_values(self):
         s = str(Matrix([[1, 2], [3, 4]]))
@@ -122,7 +115,6 @@ class TestStr(unittest.TestCase):
 
 
 class TestSizeValidation(unittest.TestCase):
-    """Pruebas del método privado _validate_size a través de operaciones."""
 
     def test_matching_size_ok(self):
         a = Matrix([[1, 2], [3, 4]])
@@ -137,7 +129,6 @@ class TestSizeValidation(unittest.TestCase):
 
 
 class TestIsSquare(unittest.TestCase):
-    """Pruebas de is_square."""
 
     def test_square(self):
         self.assertTrue(Matrix([[1, 2], [3, 4]]).is_square())
@@ -147,7 +138,6 @@ class TestIsSquare(unittest.TestCase):
 
 
 class TestAdd(unittest.TestCase):
-    """Pruebas de la suma de matrices."""
 
     def test_add_2x2(self):
         result = Matrix([[1, 2], [3, 4]]).add(Matrix([[5, 6], [7, 8]]))
@@ -163,7 +153,6 @@ class TestAdd(unittest.TestCase):
 
 
 class TestSubtract(unittest.TestCase):
-    """Pruebas de la resta de matrices."""
 
     def test_subtract_2x2(self):
         result = Matrix([[5, 6], [7, 8]]).subtract(Matrix([[1, 2], [3, 4]]))
@@ -179,7 +168,6 @@ class TestSubtract(unittest.TestCase):
 
 
 class TestMultiply(unittest.TestCase):
-    """Pruebas de la multiplicación matricial."""
 
     def test_multiply_2x2(self):
         result = Matrix([[1, 2], [3, 4]]).multiply(Matrix([[5, 6], [7, 8]]))
@@ -205,7 +193,6 @@ class TestMultiply(unittest.TestCase):
 
 
 class TestScalarMultiply(unittest.TestCase):
-    """Pruebas de la multiplicación por escalar."""
 
     def test_scalar_multiply(self):
         result = Matrix([[1, 2], [3, 4]]).scalar_multiply(3)
@@ -221,7 +208,6 @@ class TestScalarMultiply(unittest.TestCase):
 
 
 class TestTranspose(unittest.TestCase):
-    """Pruebas de la transpuesta."""
 
     def test_transpose_square(self):
         result = Matrix([[1, 2], [3, 4]]).transpose()
@@ -237,7 +223,6 @@ class TestTranspose(unittest.TestCase):
 
 
 class TestTrace(unittest.TestCase):
-    """Pruebas de la traza."""
 
     def test_trace_2x2(self):
         self.assertEqual(Matrix([[1, 2], [3, 4]]).trace(), 5.0)
@@ -255,7 +240,6 @@ class TestTrace(unittest.TestCase):
 
 
 class TestDeterminant(unittest.TestCase):
-    """Pruebas del determinante (por descomposición LU)."""
 
     def test_determinant_1x1(self):
         self.assertAlmostEqual(Matrix([[7]]).determinant(), 7.0)
@@ -322,7 +306,6 @@ class TestDeterminant(unittest.TestCase):
 
 
 class TestAdjoint(unittest.TestCase):
-    """Pruebas de la matriz adjunta."""
 
     def test_adjoint_2x2(self):
         result = Matrix([[1, 2], [3, 4]]).adjoint()
@@ -357,7 +340,6 @@ class TestAdjoint(unittest.TestCase):
 
 
 class TestInverse(unittest.TestCase):
-    """Pruebas de la matriz inversa."""
 
     def test_inverse_2x2(self):
         result = Matrix([[1, 2], [3, 4]]).inverse()
@@ -392,7 +374,6 @@ class TestInverse(unittest.TestCase):
 
 
 class TestRegisterHistory(unittest.TestCase):
-    """Pruebas del registro de operaciones en el historial."""
 
     def setUp(self):
         self._temp_dir = tempfile.TemporaryDirectory(prefix="matrix_test_")
@@ -420,7 +401,6 @@ class TestRegisterHistory(unittest.TestCase):
 
 
 class TestParseMatrixText(unittest.TestCase):
-    """Pruebas del parseo de texto a matriz."""
 
     def test_parse_basic(self):
         m = parse_matrix_text("1 2 3\n4 5 6")
