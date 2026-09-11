@@ -4,13 +4,22 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
 from api import get_data
-from sorting_methods import bubble_sort, insertion_sort, merge_sort, selection_sort
+from sorting_methods import (
+    bubble_sort,
+    counting_sort,
+    heap_sort,
+    insertion_sort,
+    merge_sort,
+    selection_sort,
+)
 
 METHODS = {
     "bubble": bubble_sort,
     "selection": selection_sort,
     "insertion": insertion_sort,
     "merge": merge_sort,
+    "heap": heap_sort,
+    "counting": counting_sort,
 }
 
 
@@ -56,7 +65,11 @@ def ask_field(data):
 
 def print_sorted(values, field, sort_func):
     original = list(values)
-    sorted_values = sort_func(values)
+    try:
+        sorted_values = sort_func(values)
+    except (TypeError, ValueError) as e:
+        print(f"\nCannot sort with {sort_func.__name__}: {e}")
+        return
 
     print("\n" + "=" * 40)
     if field:

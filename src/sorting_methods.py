@@ -12,7 +12,6 @@ def bubble_sort(arr):
             break
     return result
 
-
 def selection_sort(arr):
 
     result = list(arr)
@@ -25,7 +24,6 @@ def selection_sort(arr):
         result[i], result[min_idx] = result[min_idx], result[i]
     return result
 
-
 def insertion_sort(arr):
 
     result = list(arr)
@@ -37,7 +35,6 @@ def insertion_sort(arr):
             j -= 1
         result[j + 1] = key
     return result
-
 
 def merge_sort(arr):
 
@@ -63,5 +60,59 @@ def merge_sort(arr):
     # Add the remaining elements
     result.extend(left[i:])
     result.extend(right[j:])
+
+    return result
+
+def heap_sort(arr):
+
+    result = list(arr)
+    n = len(result)
+
+    # Build the max-heap (elements from the middle down are leaves)
+    for i in range(n // 2 - 1, -1, -1):
+        _heapify(result, n, i)
+
+    # Extract the maximum one by one, moving it to the end of the list
+    for end in range(n - 1, 0, -1):
+        result[0], result[end] = result[end], result[0]
+        _heapify(result, end, 0)
+
+    return result
+
+def _heapify(arr, n, i):
+
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+
+    if left < n and arr[left] > arr[largest]:
+        largest = left
+
+    if right < n and arr[right] > arr[largest]:
+        largest = right
+
+    if largest != i:
+        arr[i], arr[largest] = arr[largest], arr[i]
+        _heapify(arr, n, largest)
+
+def counting_sort(arr):
+
+    if not arr:
+        return []
+
+    if any(x < 0 for x in arr):
+        raise ValueError("Counting Sort requires non-negative integers")
+
+    max_value = max(arr)
+
+    # Count the occurrences of each value
+    counts = [0] * (max_value + 1)
+    for value in arr:
+        counts[value] += 1
+
+    # Reconstruct the sorted list from the counts
+    result = []
+    for value in range(max_value + 1):
+        result.extend([value] * counts[value])
 
     return result
