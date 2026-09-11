@@ -7,10 +7,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from api import get_data  # noqa: E402
 from sorting_methods import (  # noqa: E402
     bubble_sort,
+    bucket_sort,
     counting_sort,
     heap_sort,
     insertion_sort,
     merge_sort,
+    quick_sort,
+    radix_sort,
     selection_sort,
 )
 
@@ -64,9 +67,19 @@ class TestMergeSort(SortAlgorithmEdgeCasesMixin, unittest.TestCase):
     sort_func = staticmethod(merge_sort)
 
 
+class TestQuickSort(SortAlgorithmEdgeCasesMixin, unittest.TestCase):
+
+    sort_func = staticmethod(quick_sort)
+
+
 class TestHeapSort(SortAlgorithmEdgeCasesMixin, unittest.TestCase):
 
     sort_func = staticmethod(heap_sort)
+
+
+class TestBucketSort(SortAlgorithmEdgeCasesMixin, unittest.TestCase):
+
+    sort_func = staticmethod(bucket_sort)
 
 
 class TestCountingSortEdgeCases(unittest.TestCase):
@@ -95,6 +108,32 @@ class TestCountingSortEdgeCases(unittest.TestCase):
             counting_sort([1.5, 2, 3])
 
 
+class TestRadixSortEdgeCases(unittest.TestCase):
+
+    def test_empty_list(self):
+        self.assertEqual(radix_sort([]), [])
+
+    def test_single_element(self):
+        self.assertEqual(radix_sort([5]), [5])
+
+    def test_small_list(self):
+        self.assertEqual(radix_sort([3, 1, 2]), [1, 2, 3])
+
+    def test_repeated_elements(self):
+        self.assertEqual(radix_sort([4, 4, 1, 4, 3]), [1, 3, 4, 4, 4])
+
+    def test_zero_and_positive_values(self):
+        self.assertEqual(radix_sort([0, 2, 0]), [0, 0, 2])
+
+    def test_negative_values_raise(self):
+        with self.assertRaises(ValueError):
+            radix_sort([-5, 0, -1, 3])
+
+    def test_non_integer_values_raise(self):
+        with self.assertRaises(TypeError):
+            radix_sort([1.5, 2, 3])
+
+
 class TestAlgorithmsAgreeOnDataset(unittest.TestCase):
     """Check the algorithms against the real dataset from api.py."""
 
@@ -103,16 +142,30 @@ class TestAlgorithmsAgreeOnDataset(unittest.TestCase):
         selection_sort,
         insertion_sort,
         merge_sort,
+        quick_sort,
         heap_sort,
         counting_sort,
+        radix_sort,
+        bucket_sort,
     ]
 
-    COMPARISON_ALGORITHMS = [
+    RECORDS_ALGORITHMS = [
         bubble_sort,
         selection_sort,
         insertion_sort,
         merge_sort,
+        quick_sort,
         heap_sort,
+    ]
+
+    DECIMAL_ALGORITHMS = [
+        bubble_sort,
+        selection_sort,
+        insertion_sort,
+        merge_sort,
+        quick_sort,
+        heap_sort,
+        bucket_sort,
     ]
 
     @classmethod
@@ -135,7 +188,7 @@ class TestAlgorithmsAgreeOnDataset(unittest.TestCase):
         self._skip_if_offline()
         values = [float(r["generacion_total_gwh"]) for r in self.records]
         reference = sorted(values)
-        for algorithm in self.COMPARISON_ALGORITHMS:
+        for algorithm in self.DECIMAL_ALGORITHMS:
             with self.subTest(algorithm=algorithm.__name__):
                 self.assertEqual(algorithm(values), reference)
 
@@ -143,7 +196,7 @@ class TestAlgorithmsAgreeOnDataset(unittest.TestCase):
         self._skip_if_offline()
         items = [(int(r["ano"]), i, r) for i, r in enumerate(self.records)]
         expected_years = sorted(item[0] for item in items)
-        for algorithm in self.COMPARISON_ALGORITHMS:
+        for algorithm in self.RECORDS_ALGORITHMS:
             with self.subTest(algorithm=algorithm.__name__):
                 sorted_items = algorithm(items)
                 self.assertEqual([item[0] for item in sorted_items], expected_years)
