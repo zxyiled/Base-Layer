@@ -1,5 +1,66 @@
-def merge_sort(arr):
+def bubble_sort(arr):
+    """Sort a list with Bubble Sort.
 
+    Repeatedly steps through the list, comparing adjacent
+    elements and swapping them when they are out of order.
+    Time complexity: O(n^2).
+    """
+    result = list(arr)
+    n = len(result)
+    for i in range(n):
+        swapped = False
+        for j in range(n - 1 - i):
+            if result[j] > result[j + 1]:
+                result[j], result[j + 1] = result[j + 1], result[j]
+                swapped = True
+        if not swapped:
+            break
+    return result
+
+
+def selection_sort(arr):
+    """Sort a list with Selection Sort.
+
+    Repeatedly selects the smallest remaining element and
+    places it at the beginning of the unsorted part.
+    Time complexity: O(n^2).
+    """
+    result = list(arr)
+    n = len(result)
+    for i in range(n):
+        min_idx = i
+        for j in range(i + 1, n):
+            if result[j] < result[min_idx]:
+                min_idx = j
+        result[i], result[min_idx] = result[min_idx], result[i]
+    return result
+
+
+def insertion_sort(arr):
+    """Sort a list with Insertion Sort.
+
+    Builds the sorted list one element at a time, inserting
+    each new element into its correct position.
+    Time complexity: O(n^2).
+    """
+    result = list(arr)
+    for i in range(1, len(result)):
+        key = result[i]
+        j = i - 1
+        while j >= 0 and result[j] > key:
+            result[j + 1] = result[j]
+            j -= 1
+        result[j + 1] = key
+    return result
+
+
+def merge_sort(arr):
+    """Sort a list with Merge Sort (recursive).
+
+    Splits the list in half, sorts each half recursively,
+    and then merges the two sorted halves together.
+    Time complexity: O(n log n).
+    """
     if len(arr) <= 1:
         return list(arr)
 
@@ -25,8 +86,14 @@ def merge_sort(arr):
 
     return result
 
-def heap_sort(arr):
 
+def heap_sort(arr):
+    """Sort a list with Heap Sort (max-heap).
+
+    Builds a max-heap from the list and then repeatedly moves
+    the current maximum to the end of the list.
+    Time complexity: O(n log n).
+    """
     result = list(arr)
     n = len(result)
 
@@ -41,8 +108,9 @@ def heap_sort(arr):
 
     return result
 
-def _heapify(arr, n, i):
 
+def _heapify(arr, n, i):
+    """Restore the max-heap property for the subtree rooted at i."""
     largest = i
     left = 2 * i + 1
     right = 2 * i + 2
@@ -57,8 +125,14 @@ def _heapify(arr, n, i):
         arr[i], arr[largest] = arr[largest], arr[i]
         _heapify(arr, n, largest)
 
-def counting_sort(arr):
 
+def counting_sort(arr):
+    """Sort a list of non-negative integers with Counting Sort.
+
+    Counts how many times each value appears and then rebuilds
+    the sorted list from those counts. Requires all values >= 0.
+    Time complexity: O(n + k), where k is the maximum value.
+    """
     if not arr:
         return []
 
