@@ -63,6 +63,20 @@ def merge_sort(arr):
 
     return result
 
+def quick_sort(arr):
+
+    if len(arr) <= 1:
+        return list(arr)
+
+    pivot = arr[len(arr) // 2]
+
+    # Partition the values around the pivot
+    smaller = [value for value in arr if value < pivot]
+    equal = [value for value in arr if value == pivot]
+    larger = [value for value in arr if value > pivot]
+
+    return quick_sort(smaller) + equal + quick_sort(larger)
+
 def heap_sort(arr):
 
     result = list(arr)
@@ -114,5 +128,59 @@ def counting_sort(arr):
     result = []
     for value in range(max_value + 1):
         result.extend([value] * counts[value])
+
+    return result
+
+def radix_sort(arr):
+
+    if not arr:
+        return []
+
+    if any(x < 0 for x in arr):
+        raise ValueError("Radix Sort requires non-negative integers")
+
+    result = list(arr)
+    max_value = max(result)
+
+    # Sort digit by digit, from least significant to most significant
+    digit = 1
+    while max_value // digit > 0:
+        buckets = [[] for _ in range(10)]
+        for value in result:
+            bucket_index = (value // digit) % 10
+            buckets[bucket_index].append(value)
+        result = [value for bucket in buckets for value in bucket]
+        digit *= 10
+
+    return result
+
+def bucket_sort(arr):
+
+    if not arr:
+        return []
+
+    if len(arr) == 1:
+        return list(arr)
+
+    min_value = min(arr)
+    max_value = max(arr)
+
+    # If all values are equal there is nothing to sort
+    if min_value == max_value:
+        return list(arr)
+
+    n = len(arr)
+    buckets = [[] for _ in range(n)]
+
+    # Distribute each value into a bucket according to its range position
+    for value in arr:
+        bucket_index = int((value - min_value) / (max_value - min_value) * n)
+        bucket_index = min(n - 1, bucket_index)
+        buckets[bucket_index].append(value)
+
+    # Sort each bucket and concatenate the results
+    result = []
+    for bucket in buckets:
+        result.extend(insertion_sort(bucket))
 
     return result
