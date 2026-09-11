@@ -6,10 +6,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src"
 from api import get_data
 from sorting_methods import (
     bubble_sort,
+    bucket_sort,
     counting_sort,
     heap_sort,
     insertion_sort,
     merge_sort,
+    quick_sort,
+    radix_sort,
     selection_sort,
 )
 
@@ -18,8 +21,11 @@ METHODS = {
     "selection": selection_sort,
     "insertion": insertion_sort,
     "merge": merge_sort,
+    "quick": quick_sort,
     "heap": heap_sort,
     "counting": counting_sort,
+    "radix": radix_sort,
+    "bucket": bucket_sort,
 }
 
 
