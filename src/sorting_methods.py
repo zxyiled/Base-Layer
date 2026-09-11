@@ -57,3 +57,24 @@ def _heapify(arr, n, i):
         arr[i], arr[largest] = arr[largest], arr[i]
         _heapify(arr, n, largest)
 
+def counting_sort(arr):
+
+    if not arr:
+        return []
+
+    if any(x < 0 for x in arr):
+        raise ValueError("Counting Sort requires non-negative integers")
+
+    max_value = max(arr)
+
+    # Count the occurrences of each value
+    counts = [0] * (max_value + 1)
+    for value in arr:
+        counts[value] += 1
+
+    # Reconstruct the sorted list from the counts
+    result = []
+    for value in range(max_value + 1):
+        result.extend([value] * counts[value])
+
+    return result
