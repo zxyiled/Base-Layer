@@ -3,4 +3,8 @@ name = "matrix-calculator"
 version = "1.0.0"
 description = "Calculadora de matrices con interfaz gráfica"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "pandas>=2.3.3",
+    "python-dotenv>=1.2.3",
+    "requests>=2.34.2",
+]
