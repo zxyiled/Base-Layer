@@ -26,7 +26,7 @@ def column_values(records, column):
 
 
 def round_values(values, decimals):
-    """Round floats to `decimals` places; with 0 decimals they become ints."""
+    # Round floats to `decimals` places; with 0 decimals they become ints.
     if decimals == 0:
         return [round(value) for value in values]
     return [round(value, decimals) for value in values]
