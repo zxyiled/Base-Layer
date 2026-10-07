@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from api import get_data  # noqa: E402
 from sorting_methods import (  # noqa: E402
+    ALGORITHMS,
     bubble_sort,
     bucket_sort,
     counting_sort,
@@ -132,6 +133,54 @@ class TestRadixSortEdgeCases(unittest.TestCase):
     def test_non_integer_values_raise(self):
         with self.assertRaises(TypeError):
             radix_sort([1.5, 2, 3])
+
+
+class TestAlgorithmClasses(unittest.TestCase):
+    """Check the class interface the CLI uses on top of the sort functions."""
+
+    def test_registry_keeps_menu_order(self):
+        self.assertEqual(
+            list(ALGORITHMS),
+            ["bubble", "selection", "insertion", "merge", "quick", "heap", "counting", "radix", "bucket"],
+        )
+
+    def test_sort_does_not_mutate_input(self):
+        for key, algorithm in ALGORITHMS.items():
+            with self.subTest(algorithm=key):
+                original = [3, 1, 2]
+                self.assertEqual(algorithm.sort(original), [1, 2, 3])
+                self.assertEqual(original, [3, 1, 2])
+
+    def test_comparison_sorts_accept_numbers_and_text(self):
+        for key in ["bubble", "selection", "insertion", "merge", "quick", "heap"]:
+            with self.subTest(algorithm=key):
+                self.assertTrue(ALGORITHMS[key].can_sort([-1.5, 2, 0]))
+                self.assertTrue(ALGORITHMS[key].can_sort(["b", "a"]))
+                self.assertFalse(ALGORITHMS[key].can_sort(["b", 1]))
+
+    def test_bucket_sort_requires_numbers(self):
+        self.assertTrue(ALGORITHMS["bucket"].can_sort([-1.5, 2, 0]))
+        self.assertFalse(ALGORITHMS["bucket"].can_sort(["b", "a"]))
+
+    def test_counting_and_radix_require_non_negative_integers(self):
+        for key in ["counting", "radix"]:
+            with self.subTest(algorithm=key):
+                self.assertTrue(ALGORITHMS[key].can_sort([0, 3, 1]))
+                self.assertFalse(ALGORITHMS[key].can_sort([-5, 0, 3]))
+                self.assertFalse(ALGORITHMS[key].can_sort([1.5, 2, 3]))
+                self.assertFalse(ALGORITHMS[key].can_sort(["a"]))
+
+    def test_can_sort_matches_actual_failures(self):
+        # Every combination declared incompatible must really fail when sorted
+        samples = [[-5, 0, 3], [1.5, 2.0, 0.5], ["b", "a"]]
+        for key, algorithm in ALGORITHMS.items():
+            for values in samples:
+                with self.subTest(algorithm=key, values=values):
+                    if algorithm.can_sort(values):
+                        self.assertEqual(algorithm.sort(values), sorted(values))
+                    else:
+                        with self.assertRaises((TypeError, ValueError)):
+                            algorithm.sort(values)
 
 
 class TestAlgorithmsAgreeOnDataset(unittest.TestCase):
