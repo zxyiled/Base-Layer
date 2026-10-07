@@ -184,3 +184,120 @@ def bucket_sort(arr):
         result.extend(insertion_sort(bucket))
 
     return result
+
+def _all_numbers(values):
+    return all(isinstance(value, (int, float)) for value in values)
+
+
+def _all_non_negative_integers(values):
+    return all(isinstance(value, int) and value >= 0 for value in values)
+
+
+class SortingAlgorithm:
+    """Common interface used by the CLI and scripts to work with any algorithm.
+
+    `sort` returns a new list without mutating its input. `can_sort` tells,
+    before sorting, whether the algorithm can handle the given values.
+    """
+
+    key = ""
+    name = ""
+    requirement = "values of a single comparable type (all numbers or all text)"
+
+    def sort(self, values):
+        raise NotImplementedError
+
+    def can_sort(self, values):
+        return _all_numbers(values) or all(isinstance(value, str) for value in values)
+
+
+class BubbleSort(SortingAlgorithm):
+
+    key = "bubble"
+    name = "Bubble Sort"
+    sort = staticmethod(bubble_sort)
+
+
+class SelectionSort(SortingAlgorithm):
+
+    key = "selection"
+    name = "Selection Sort"
+    sort = staticmethod(selection_sort)
+
+
+class InsertionSort(SortingAlgorithm):
+
+    key = "insertion"
+    name = "Insertion Sort"
+    sort = staticmethod(insertion_sort)
+
+
+class MergeSort(SortingAlgorithm):
+
+    key = "merge"
+    name = "Merge Sort"
+    sort = staticmethod(merge_sort)
+
+
+class QuickSort(SortingAlgorithm):
+
+    key = "quick"
+    name = "Quick Sort"
+    sort = staticmethod(quick_sort)
+
+
+class HeapSort(SortingAlgorithm):
+
+    key = "heap"
+    name = "Heap Sort"
+    sort = staticmethod(heap_sort)
+
+
+class CountingSort(SortingAlgorithm):
+
+    key = "counting"
+    name = "Counting Sort"
+    requirement = "non-negative integer values"
+    sort = staticmethod(counting_sort)
+
+    def can_sort(self, values):
+        return _all_non_negative_integers(values)
+
+
+class RadixSort(SortingAlgorithm):
+
+    key = "radix"
+    name = "Radix Sort"
+    requirement = "non-negative integer values"
+    sort = staticmethod(radix_sort)
+
+    def can_sort(self, values):
+        return _all_non_negative_integers(values)
+
+
+class BucketSort(SortingAlgorithm):
+
+    key = "bucket"
+    name = "Bucket Sort"
+    requirement = "numeric values"
+    sort = staticmethod(bucket_sort)
+
+    def can_sort(self, values):
+        return _all_numbers(values)
+
+
+# Single registry of the available algorithms (order = CLI menu order)
+ALGORITHMS = {
+    algorithm.key: algorithm
+    for algorithm in (
+        BubbleSort(),
+        SelectionSort(),
+        InsertionSort(),
+        MergeSort(),
+        QuickSort(),
+        HeapSort(),
+        CountingSort(),
+        RadixSort(),
+        BucketSort(),
+    )
+}
