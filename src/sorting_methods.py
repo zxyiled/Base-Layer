@@ -194,11 +194,6 @@ def _all_non_negative_integers(values):
 
 
 class SortingAlgorithm:
-    """Common interface used by the CLI to work with any algorithm.
-
-    `sort` returns a new list without mutating its input. `can_sort` tells,
-    before sorting, whether the algorithm can handle the given values.
-    """
 
     key = ""
     name = ""
