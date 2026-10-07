@@ -4,103 +4,131 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src")))
 
 from api import get_data
-from sorting_methods import (
-    bubble_sort,
-    bucket_sort,
-    counting_sort,
-    heap_sort,
-    insertion_sort,
-    merge_sort,
-    quick_sort,
-    radix_sort,
-    selection_sort,
-)
+from dataset import COLUMNS, column_values, format_table, head, round_values, tail
+from sorting_methods import ALGORITHMS
 
-METHODS = {
-    "bubble": bubble_sort,
-    "selection": selection_sort,
-    "insertion": insertion_sort,
-    "merge": merge_sort,
-    "quick": quick_sort,
-    "heap": heap_sort,
-    "counting": counting_sort,
-    "radix": radix_sort,
-    "bucket": bucket_sort,
+COLUMN_NAMES = list(COLUMNS)
+
+MAX_DECIMALS = 6
+
+PREVIEWS = {
+    "head": head,
+    "tail": tail,
 }
 
 
-def is_numeric(value):
-    try:
-        float(value)
-        return True
-    except (TypeError, ValueError):
-        return False
-
-
-def ask_method():
-    print("\nAvailable sorting methods:")
-    for name in METHODS:
-        print(f"  - {name}")
+def ask_int(prompt, minimum, maximum):
     while True:
-        choice = input("Which sorting method would you like to use? ").strip().lower()
-        if choice in METHODS:
-            return METHODS[choice]
-        print(f"Invalid method '{choice}'. Please choose one from the list.")
+        answer = input(f"{prompt} ({minimum}-{maximum}): ").strip()
+        try:
+            number = int(answer)
+        except ValueError:
+            print(f"'{answer}' is not a whole number.")
+            continue
+        if minimum <= number <= maximum:
+            return number
+        print(f"Please enter a number between {minimum} and {maximum}.")
 
 
-def ask_field(data):
-    if not isinstance(data, list) or not data:
-        raise ValueError("The dataset is empty or has an unexpected format.")
-
-    if isinstance(data[0], dict):
-        fields = [key for key in data[0] if is_numeric(data[0][key])]
-        if not fields:
-            raise ValueError("No numeric fields were found in the dataset.")
-        print(f"\nAvailable numeric fields: {', '.join(fields)}")
-        while True:
-            field = input("Which numeric field would you like to sort? ").strip()
-            if field in fields:
-                values = [float(record[field]) for record in data if is_numeric(record.get(field))]
-                return field, values
-            print(f"Field '{field}' is not valid.")
-    elif is_numeric(data[0]):
-        return None, [float(value) for value in data if is_numeric(value)]
-    else:
-        raise ValueError("The dataset format is not supported.")
+def ask_option(prompt, options):
+    """Ask the user to pick one of `options`, by its name or its number."""
+    for number, option in enumerate(options, start=1):
+        print(f"  {number}. {option}")
+    while True:
+        answer = input(f"{prompt} ").strip().lower()
+        if answer in options:
+            return answer
+        if answer.isdigit() and 1 <= int(answer) <= len(options):
+            return options[int(answer) - 1]
+        print(f"Invalid option '{answer}'. Please choose one from the list.")
 
 
-def print_sorted(values, field, sort_func):
-    original = list(values)
-    try:
-        sorted_values = sort_func(values)
-    except (TypeError, ValueError) as e:
-        print(f"\nCannot sort with {sort_func.__name__}: {e}")
-        return
+def ask_rows(records):
+    print("\nRows to use:")
+    mode = ask_option("Take the first rows (head) or the last rows (tail)?", list(PREVIEWS))
+    count = ask_int("How many rows?", 1, len(records))
+    return PREVIEWS[mode](records, count)
+
+
+def ask_rounding(values):
+    print("\nRound the values before sorting?")
+    if ask_option("Choose an option:", ["no", "yes"]) == "no":
+        return values
+    decimals = ask_int("How many decimals? (0 converts them to integers)", 0, MAX_DECIMALS)
+    return round_values(values, decimals)
+
+
+def preview(records):
+    print(f"\nAvailable columns: {', '.join(COLUMN_NAMES)}")
+    count = ask_int("How many columns would you like to display?", 1, len(COLUMN_NAMES))
+    rows = ask_rows(records)
+
+    print()
+    print(format_table(rows, COLUMN_NAMES[:count]))
+
+
+def print_sorted(values, column, algorithm):
+    sorted_values = algorithm.sort(values)
 
     print("\n" + "=" * 40)
-    if field:
-        print(f"Field sorted: {field}")
-    print(f"Method: {sort_func.__name__}")
+    print(f"Column sorted: {column}")
+    print(f"Method: {algorithm.name}")
     print("=" * 40)
     print("Original:")
-    for value in original:
+    for value in values:
         print(f"  {value}")
     print("Sorted:")
     for value in sorted_values:
         print(f"  {value}")
 
 
-def main():
-    print("Fetching dataset from the API...")
-    data = get_data()
-    if data is None:
-        print("Could not retrieve data.")
+def sort_column(records):
+    print("\nAvailable columns:")
+    column = ask_option("Which column would you like to sort?", COLUMN_NAMES)
+    values = column_values(ask_rows(records), column)
+    if COLUMNS[column] is float:
+        values = ask_rounding(values)
+
+    print("\nAvailable sorting methods:")
+    algorithm = ALGORITHMS[ask_option("Which sorting method would you like to use?", list(ALGORITHMS))]
+
+    if not algorithm.can_sort(values):
+        print(f"\n{algorithm.name} cannot be applied to column '{column}'.")
+        print(f"This algorithm requires {algorithm.requirement}.")
+        print("Please select another column or algorithm.")
         return
 
-    field, values = ask_field(data)
-    sort_func = ask_method()
-    print_sorted(values, field, sort_func)
+    print_sorted(values, column, algorithm)
+
+
+ACTIONS = {
+    "preview": preview,
+    "sort": sort_column,
+    "exit": None,
+}
+
+
+def main():
+    print("Fetching dataset from the API...")
+    records = get_data()
+    if records is None:
+        print("Could not retrieve data.")
+        return
+    if not isinstance(records, list) or not records:
+        print("The dataset is empty or has an unexpected format.")
+        return
+
+    while True:
+        print("\nWhat would you like to do?")
+        action = ask_option("Choose an option:", list(ACTIONS))
+        if action == "exit":
+            print("Goodbye.")
+            return
+        ACTIONS[action](records)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyboardInterrupt, EOFError):
+        print("\nGoodbye.")
