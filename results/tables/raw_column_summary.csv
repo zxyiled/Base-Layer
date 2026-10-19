@@ -1,0 +1,10 @@
+column,dtype,missing,missing_pct,unique_values
+NombreEstacion,str,0,0.0,30
+Variable,str,0,0.0,14
+Unidad,str,0,0.0,9
+FechaInicio,str,0,0.0,744
+FechaFin,str,0,0.0,744
+FechaModificacion,str,1818,1.61,4532
+Concentracion,float64,5166,4.57,74294
+MSFLCode,object,50592,44.74,6
+source_file,str,0,0.0,152

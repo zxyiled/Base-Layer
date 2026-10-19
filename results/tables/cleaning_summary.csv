@@ -1,0 +1,8 @@
+check,before,after
+records,113088,113088
+columns,8,5
+missing_values_in_measurement,5166,5166
+exact_duplicate_records,0,0
+duplicated_station_variable_hour,0,0
+physically_impossible_values,0,0
+end_time_not_start_plus_one_hour,0,
