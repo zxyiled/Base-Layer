@@ -3,6 +3,13 @@
 
 # Ignore data
 .pytest_cache
+data/
+
+# Virtual environment
+.venv/
 
 # Python bytecode cache
 __pycache__/
+
+# Generated outputs
+docs/
