@@ -5,12 +5,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "src"
 
 import pandas as pd
 
-import eda
-import evaluation
-from data_cleaning import clean_data, cleaning_summary, station_table
-from data_loader import load_raw
-from model import (FEATURE, TARGET, chronological_split, every_third_hour, fit_simple_linear_regression,
-                   model_data, predict, regression_sums_table)
+from data_cleaning import DataCleaner
+from data_loader import SiataLoader
+from eda import ExploratoryAnalysis
+from evaluation import EvaluationPlotter, RegressionMetrics
+from model import FEATURE, TARGET, ModelDataPreparer, SimpleLinearRegression
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_ZIP = os.path.join(PROJECT_DIR, "data", "raw", "DatosValidados_agosto2026.zip")
@@ -40,16 +39,23 @@ def run_siata_pipeline():
     for folder in (PROCESSED_DIR, FIGURES_DIR, TABLES_DIR):
         os.makedirs(folder, exist_ok=True)
 
+    loader = SiataLoader(RAW_ZIP)
+    cleaner = DataCleaner()
+    eda = ExploratoryAnalysis()
+    preparer = ModelDataPreparer(FEATURE, TARGET)
+    metrics_calculator = RegressionMetrics()
+    evaluation_plotter = EvaluationPlotter()
+
     print("1. Loading the raw SIATA files...")
-    raw = load_raw(RAW_ZIP)
+    raw = loader.load_raw()
     print(f"   {raw['source_file'].nunique()} files, {raw.shape[0]} records, {raw.shape[1] - 1} columns")
     save_table(raw.head(10), "raw_sample.csv", index=False)
     save_table(eda.raw_column_summary(raw), "raw_column_summary.csv")
 
     print("2. Cleaning...")
-    clean = clean_data(raw)
+    clean = cleaner.clean_data(raw)
     clean.to_csv(os.path.join(PROCESSED_DIR, "siata_clean_long.csv"), index=False)
-    summary = cleaning_summary(raw, clean)
+    summary = cleaner.cleaning_summary(raw, clean)
     save_table(summary, "cleaning_summary.csv", index=False)
     print(summary.to_string(index=False))
 
@@ -63,7 +69,7 @@ def run_siata_pipeline():
     save_table(correlations, "station_correlation.csv", index=False)
     eda.plot_station_correlations(correlations, FEATURE, TARGET, figure_path("station_correlation.png"))
 
-    wide = station_table(clean, MODEL_STATION)[METEOROLOGICAL]
+    wide = cleaner.station_table(clean, MODEL_STATION)[METEOROLOGICAL]
     wide.to_csv(os.path.join(PROCESSED_DIR, f"station_{MODEL_STATION}_hourly.csv"))
     save_table(wide.describe().T, "station_descriptive_stats.csv")
     save_table(eda.outlier_summary(wide), "outlier_summary.csv")
@@ -77,18 +83,20 @@ def run_siata_pipeline():
     eda.plot_diurnal_cycle(wide, [FEATURE, TARGET], units, figure_path("diurnal_cycle.png"))
 
     print(f"4. Simple linear regression at {MODEL_STATION}...")
-    data = model_data(wide)
-    train, test = chronological_split(data, SPLIT_TIME)
-    intercept, slope = fit_simple_linear_regression(train[FEATURE], train[TARGET])
-    test_predicted = predict(intercept, slope, test[FEATURE])
+    data = preparer.model_data(wide)
+    train, test = preparer.chronological_split(data, SPLIT_TIME)
+    model = SimpleLinearRegression().fit(train[FEATURE], train[TARGET])
+    intercept, slope = model.intercept, model.slope
+    test_predicted = model.predict(test[FEATURE])
     predictions = test.assign(predicted=test_predicted, residual=test[TARGET] - test_predicted)
     save_table(predictions, "test_predictions.csv")
 
     print("5. Manual example (8 real training records)...")
-    sample = every_third_hour(train, MANUAL_TRAIN_DAY)
-    save_table(regression_sums_table(sample[FEATURE], sample[TARGET]), "manual_regression_sample.csv")
-    manual_intercept, manual_slope = fit_simple_linear_regression(sample[FEATURE], sample[TARGET])
-    sample_errors = evaluation.error_table(sample[TARGET], predict(manual_intercept, manual_slope, sample[FEATURE]))
+    sample = preparer.every_third_hour(train, MANUAL_TRAIN_DAY)
+    save_table(preparer.regression_sums_table(sample[FEATURE], sample[TARGET]), "manual_regression_sample.csv")
+    manual_model = SimpleLinearRegression().fit(sample[FEATURE], sample[TARGET])
+    manual_intercept, manual_slope = manual_model.intercept, manual_model.slope
+    sample_errors = metrics_calculator.error_table(sample[TARGET], manual_model.predict(sample[FEATURE]))
     save_table(sample_errors, "manual_sample_errors.csv")
 
     new_time = test.index[0]
@@ -98,30 +106,31 @@ def run_siata_pipeline():
         ("full_training", len(train), intercept, slope),
     ], columns=["fit", "n", "intercept_b0", "slope_b1"])
     coefficients["x_new"] = x_new
-    coefficients["prediction_at_x_new"] = predict(coefficients["intercept_b0"], coefficients["slope_b1"], x_new)
+    coefficients["prediction_at_x_new"] = SimpleLinearRegression.predict_line(
+        coefficients["intercept_b0"], coefficients["slope_b1"], x_new)
     coefficients["actual_at_x_new"] = round(test[TARGET].iloc[0], 2)
     coefficients["time_of_x_new"] = new_time
     save_table(coefficients, "model_coefficients.csv", index=False)
     print(coefficients.to_string(index=False))
 
     print("6. Evaluation...")
-    metric_sample = every_third_hour(test, MANUAL_TEST_DAY)
-    metric_errors = evaluation.error_table(
-        metric_sample[TARGET], predict(intercept, slope, metric_sample[FEATURE]).round(2)
+    metric_sample = preparer.every_third_hour(test, MANUAL_TEST_DAY)
+    metric_errors = metrics_calculator.error_table(
+        metric_sample[TARGET], model.predict(metric_sample[FEATURE]).round(2)
     )
     metric_errors.insert(0, "x", metric_sample[FEATURE])
     save_table(metric_errors, "manual_metric_sample.csv")
-    save_table(pd.DataFrame([evaluation.metrics_row("manual_metric_sample", metric_errors["y"], metric_errors["y_hat"])]),
+    save_table(pd.DataFrame([metrics_calculator.metrics_row("manual_metric_sample", metric_errors["y"], metric_errors["y_hat"])]),
                "manual_metric_check.csv", index=False)
 
     baseline = [train[TARGET].mean()] * len(test)
     metrics = pd.DataFrame([
-        evaluation.metrics_row("linear_regression_train", train[TARGET], predict(intercept, slope, train[FEATURE])),
-        evaluation.metrics_row("linear_regression_test", test[TARGET], test_predicted),
-        evaluation.metrics_row("baseline_train_mean_test", test[TARGET], baseline),
+        metrics_calculator.metrics_row("linear_regression_train", train[TARGET], model.predict(train[FEATURE])),
+        metrics_calculator.metrics_row("linear_regression_test", test[TARGET], test_predicted),
+        metrics_calculator.metrics_row("baseline_train_mean_test", test[TARGET], baseline),
     ])
     metrics["residual_lag1_autocorrelation"] = [
-        (train[TARGET] - predict(intercept, slope, train[FEATURE])).autocorr(),
+        (train[TARGET] - model.predict(train[FEATURE])).autocorr(),
         predictions["residual"].autocorr(),
         (test[TARGET] - baseline).autocorr(),
     ]
@@ -129,12 +138,12 @@ def run_siata_pipeline():
     print(metrics.to_string(index=False))
 
     label = eda.axis_label(TARGET, units).lower()
-    evaluation.plot_regression_line(train, test, FEATURE, TARGET, intercept, slope, units,
-                                    figure_path("regression_line.png"))
-    evaluation.plot_actual_vs_predicted(test[TARGET], predictions["predicted"], label,
-                                        figure_path("actual_vs_predicted.png"))
-    evaluation.plot_residuals(test.index, predictions["predicted"], predictions["residual"], label,
-                              figure_path("residuals.png"))
+    evaluation_plotter.plot_regression_line(train, test, FEATURE, TARGET, intercept, slope, units,
+                                            figure_path("regression_line.png"))
+    evaluation_plotter.plot_actual_vs_predicted(test[TARGET], predictions["predicted"], label,
+                                                figure_path("actual_vs_predicted.png"))
+    evaluation_plotter.plot_residuals(test.index, predictions["predicted"], predictions["residual"], label,
+                                      figure_path("residuals.png"))
     print(f"Done. Figures in {FIGURES_DIR}, tables in {TABLES_DIR}, cleaned data in {PROCESSED_DIR}.")
 
 
