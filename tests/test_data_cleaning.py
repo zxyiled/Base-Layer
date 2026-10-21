@@ -6,7 +6,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from data_cleaning import clean_data, cleaning_summary, end_time_mismatches, station_table  # noqa: E402
+from data_cleaning import DataCleaner  # noqa: E402
 
 
 def raw_row(variable, unit, hour, value, station="TST-ONE"):
@@ -34,7 +34,8 @@ RAW = pd.DataFrame([
 class TestCleanData(unittest.TestCase):
 
     def setUp(self):
-        self.clean = clean_data(RAW)
+        self.cleaner = DataCleaner()
+        self.clean = self.cleaner.clean_data(RAW)
 
     def test_renames_and_parses_types(self):
         self.assertEqual(list(self.clean.columns), ["station", "variable", "unit", "start_time", "value"])
@@ -57,19 +58,19 @@ class TestCleanData(unittest.TestCase):
 
     def test_unknown_variable_is_rejected(self):
         with self.assertRaises(ValueError):
-            clean_data(pd.DataFrame([raw_row("Unknown", "x", 1, 1.0)]))
+            self.cleaner.clean_data(pd.DataFrame([raw_row("Unknown", "x", 1, 1.0)]))
 
     def test_station_table_has_one_column_per_variable(self):
-        wide = station_table(self.clean, "TST-ONE")
+        wide = self.cleaner.station_table(self.clean, "TST-ONE")
         self.assertEqual(wide.shape, (2, 3))
         self.assertEqual(wide.loc[pd.Timestamp("2026-08-01 01:00"), "relative_humidity"], 80.0)
 
     def test_summary_counts(self):
-        summary = cleaning_summary(RAW, self.clean).set_index("check")
+        summary = self.cleaner.cleaning_summary(RAW, self.clean).set_index("check")
         self.assertEqual(summary.loc["exact_duplicate_records", "before"], 1)
         self.assertEqual(summary.loc["physically_impossible_values", "before"], 2)
         self.assertEqual(summary.loc["physically_impossible_values", "after"], 0)
-        self.assertEqual(end_time_mismatches(RAW), 0)
+        self.assertEqual(self.cleaner.end_time_mismatches(RAW), 0)
 
 
 if __name__ == "__main__":
