@@ -2,7 +2,8 @@
 
 **Datos:** SIATA, datos validados de agosto de 2026
 **Algoritmo:** regresión lineal simple (mínimos cuadrados ordinarios)
-**Reproducción:** `uv run python main.py siata` regenera todas las cifras, tablas y figuras citadas.
+**Reproducción:** `uv run python main.py` (sin argumentos) regenera todas las cifras, tablas y figuras citadas.
+**Pruebas:** `uv run pytest`.
 
 ---
 
@@ -25,7 +26,7 @@ El Valle de Aburrá cuenta con una red de estaciones del SIATA que registra vari
 
 **Justificación física.** La humedad relativa es el cociente entre la presión de vapor real y la presión de vapor de saturación, y esta última crece con la temperatura (relación de Clausius–Clapeyron). Si el contenido de vapor cambia poco durante el día, la humedad relativa baja cuando la temperatura sube. Por eso se espera una relación fuerte y negativa. La temperatura no contiene a la humedad relativa ni se calcula a partir de ella: son dos sensores distintos, así que no hay fuga del objetivo.
 
-**Por qué no otras combinaciones.** PM2.5 es una fracción de PM10, y NOx = NO + NO2, de modo que usar una para predecir la otra revelaría parcialmente el objetivo. Ozono frente a temperatura también mostró correlación (r medio 0,80 en 8 estaciones), pero es menor que la de temperatura y humedad y depende de procesos fotoquímicos más difíciles de explicar con un solo predictor.
+**Por qué no otras combinaciones.** PM2.5 es una fracción de PM10, y NOx = NO + NO2, de modo que usar una para predecir la otra revelaría parcialmente el objetivo. Ozono frente a temperatura también mostró correlación positiva (r medio 0,80 en las 8 estaciones que miden ozono, con los datos de todo el mes; 0,82 usando solo el 1–24 de agosto), pero es menor que la de temperatura y humedad (r entre −0,88 y −0,94) y depende de procesos fotoquímicos más difíciles de explicar con un solo predictor.
 
 ## 3. Descripción del conjunto de datos y variables
 
@@ -69,15 +70,22 @@ El Valle de Aburrá cuenta con una red de estaciones del SIATA que registra vari
 
 El conjunto **no incluye coordenadas, altitud ni nombres completos de las estaciones**, solo códigos. Los prefijos de los códigos (MED, BAR, ITA…) parecen indicar el municipio, pero el dataset no lo documenta, así que no se hace ninguna afirmación geográfica.
 
-**Muestra de registros originales** (`results/tables/raw_sample.csv`, primeras filas tal como vienen en el ZIP):
+**Muestra de registros originales** (`results/tables/raw_sample.csv`, las 10 primeras filas tal como vienen en el ZIP; por el orden alfabético de los archivos corresponden a CO de la estación `GIR-EPM`, no a las variables del modelo):
 
-| NombreEstacion | Variable | Unidad | FechaInicio | FechaFin | Concentracion | source_file |
-|---|---|---|---|---|---|---|
-| GIR-EPM | CO | ppm | 01/08/2026 12:00:00 am | 01/08/2026 01:00:00 am | 0,492662 | CO_GIR-EPM2026-08.xls |
-| GIR-EPM | CO | ppm | 01/08/2026 01:00:00 am | 01/08/2026 02:00:00 am | 0,347234 | CO_GIR-EPM2026-08.xls |
-| GIR-EPM | CO | ppm | 01/08/2026 02:00:00 am | 01/08/2026 03:00:00 am | 0,323106 | CO_GIR-EPM2026-08.xls |
+| NombreEstacion | Variable | Unidad | FechaInicio | FechaFin | Concentracion |
+|---|---|---|---|---|---|
+| GIR-EPM | CO | ppm | 01/08/2026 12:00:00 am | 01/08/2026 01:00:00 am | 0,492662 |
+| GIR-EPM | CO | ppm | 01/08/2026 01:00:00 am | 01/08/2026 02:00:00 am | 0,347234 |
+| GIR-EPM | CO | ppm | 01/08/2026 02:00:00 am | 01/08/2026 03:00:00 am | 0,323106 |
+| GIR-EPM | CO | ppm | 01/08/2026 03:00:00 am | 01/08/2026 04:00:00 am | 0,467901 |
+| GIR-EPM | CO | ppm | 01/08/2026 04:00:00 am | 01/08/2026 05:00:00 am | 0,291179 |
+| GIR-EPM | CO | ppm | 01/08/2026 05:00:00 am | 01/08/2026 06:00:00 am | 0,395662 |
+| GIR-EPM | CO | ppm | 01/08/2026 06:00:00 am | 01/08/2026 07:00:00 am | 0,570859 |
+| GIR-EPM | CO | ppm | 01/08/2026 07:00:00 am | 01/08/2026 08:00:00 am | 0,765012 |
+| GIR-EPM | CO | ppm | 01/08/2026 08:00:00 am | 01/08/2026 09:00:00 am | 0,283249 |
+| GIR-EPM | CO | ppm | 01/08/2026 09:00:00 am | 01/08/2026 10:00:00 am | 0,244994 |
 
-Las 8 filas usadas en el desarrollo matemático (sección 7) son registros reales de la estación modelada.
+Nótese que `12:00:00 am` es la medianoche (hora 0) y que `FechaFin` es siempre `FechaInicio` + 1 h. Los 8 registros usados en el desarrollo matemático (sección 7) son datos reales de la estación modelada.
 
 ## 4. Análisis exploratorio de datos
 
@@ -136,7 +144,7 @@ La nube de puntos tiene forma claramente lineal y decreciente. En el extremo fr�
 
 ![Diurnal cycle](../results/figures/diurnal_cycle.png)
 
-Ambas series tienen un ciclo diario muy marcado y en fase opuesta. En promedio, la temperatura mínima (≈ 18,5 °C) ocurre a las 05:00 y coincide con la humedad máxima (≈ 92 %), y la temperatura máxima (≈ 30 °C) ocurre a las 14:00, junto con la humedad mínima (≈ 40 %). Hay días anómalos, por ejemplo alrededor del 17 y 18 de agosto, con temperaturas bajas todo el día y humedad muy alta. La línea roja marca la división cronológica entre entrenamiento y prueba.
+Ambas series tienen un ciclo diario muy marcado y en fase opuesta. En promedio, la temperatura mínima (≈ 18,5 °C) ocurre a las 05:00 y coincide con la humedad máxima (≈ 92 %), y la temperatura máxima (≈ 30 °C) ocurre a las 14:00, junto con la humedad mínima (≈ 40 %). Hay días que se apartan del patrón típico. El 17 y el 18 de agosto tuvieron las temperaturas medias diarias más bajas del mes (21,5 y 22,0 °C) y las humedades medias diarias más altas (83,8 % y 83,4 %). En el sentido contrario, del 10 al 13 de agosto la humedad media diaria fue de 57 a 59 % con temperaturas medias normales (23,1 a 24,4 °C), y el mínimo del mes (23,13 %) se registró el 10 de agosto a las 12:00. El dataset no incluye nubosidad, punto de rocío ni otras variables que permitan explicar la causa de estos días. La línea roja marca la división cronológica entre entrenamiento y prueba.
 
 ## 5. Limpieza y preparación de datos
 
@@ -257,7 +265,7 @@ Ejemplo para i = 1: $\hat{y}_1 = 173{,}8989 - 4{,}6554 \times 19{,}76 = 173{,}89
 | 8 | 20,56 | 73,38 | 78,18 | −4,80 | 23,07 |
 | **Σ** | | | | **≈ 0,00** | **80,88** |
 
-La suma de los errores es prácticamente cero, una propiedad de los mínimos cuadrados con intercepto que sirve para comprobar el cálculo. Los errores más grandes aparecen a las 09:00 y a las 18:00, es decir, en las horas de transición, cuando la temperatura cambia rápido y la humedad responde con cierto retraso.
+La suma de los errores es prácticamente cero, una propiedad de los mínimos cuadrados con intercepto que sirve para comprobar el cálculo. Los errores absolutos más grandes aparecen a las 18:00 (5,05), a las 21:00 (4,80) y a las 09:00 (4,44), es decir, en horas de transición entre el día y la noche. Una hipótesis posible es que en esas horas la temperatura cambia rápido y la humedad no la sigue exactamente de forma lineal; con solo 8 registros de un día esta hipótesis **no se puede comprobar**.
 
 ### 7.6 Predicción para una entrada nueva de prueba
 
@@ -273,19 +281,24 @@ Se toma el **primer registro del periodo de prueba**, del 25 de agosto de 2026 a
 | Muestra manual (1 ago, cada 3 h) | 8 | 173,8989 | −4,6554 |
 | Entrenamiento completo (1–24 ago) | 576 | 177,0926 | −4,6139 |
 
-El procedimiento es el mismo (las mismas fórmulas en `fit_simple_linear_regression`), pero **los datos no lo son**: el modelo completo usa las 576 horas de entrenamiento sin redondear. Por eso los coeficientes se parecen sin ser idénticos. Que la pendiente de un solo día (−4,66) quede tan cerca de la de 24 días (−4,61) indica que la relación es estable. El modelo que se evalúa en la sección 9 es el completo.
+El procedimiento es el mismo (las mismas fórmulas en `SimpleLinearRegression.fit`), pero **los datos no lo son**: el modelo completo usa las 576 horas de entrenamiento sin redondear. Por eso los coeficientes se parecen sin ser idénticos. Que la pendiente de un solo día (−4,66) quede tan cerca de la de 24 días (−4,61) indica que la relación es estable. El modelo que se evalúa en la sección 9 es el completo.
 
 ## 8. Implementación en Python
 
-| Archivo | Responsabilidad |
-|---|---|
-| `src/data_loader.py` | Lee los 152 `.xls` directamente desde el ZIP y valida que todos tengan las mismas columnas. |
-| `src/data_cleaning.py` | Renombra, convierte tipos, elimina duplicados, aplica límites físicos y genera la tabla por estación y el resumen de limpieza. |
-| `src/eda.py` | Tablas descriptivas, valores atípicos, correlaciones y figuras exploratorias. |
-| `src/model.py` | Selección de X e Y, división cronológica, ajuste por fórmulas cerradas y tabla de sumas manual. |
-| `src/evaluation.py` | MAE, MSE, RMSE y R², tabla de errores y figuras de evaluación. |
-| `main.py` | Orquesta todo con `uv run python main.py siata`. Sin argumentos conserva el menú anterior del proyecto. |
-| `tests/test_data_cleaning.py`, `tests/test_model.py` | 17 pruebas con datos sintéticos: limpieza, ajuste (comparado con `numpy.polyfit`), división temporal y métricas. |
+El código está organizado en clases pequeñas, una por responsabilidad:
+
+| Archivo | Clase(s) | Responsabilidad |
+|---|---|---|
+| `src/data_loader.py` | `SiataLoader` | Lee los 152 `.xls` directamente desde el ZIP y valida que todos tengan las mismas columnas. |
+| `src/data_cleaning.py` | `DataCleaner` | Renombra, convierte tipos, elimina duplicados, aplica límites físicos y genera la tabla por estación y el resumen de limpieza. Las reglas (nombres, unidades, límites) son atributos de la clase. |
+| `src/plotting.py` | `BasePlotter` | Etiquetas de ejes y guardado de figuras, compartidos por las clases que dibujan. |
+| `src/eda.py` | `ExploratoryAnalysis` | Tablas descriptivas, valores atípicos, correlaciones y figuras exploratorias. |
+| `src/model.py` | `ModelDataPreparer`, `SimpleLinearRegression` | Selección de X e Y, división cronológica y tabla de sumas manual; ajuste por fórmulas cerradas con `fit` y `predict`. |
+| `src/evaluation.py` | `RegressionMetrics`, `EvaluationPlotter` | MAE, MSE, RMSE y R², tabla de errores y figuras de evaluación. |
+| `main.py` | — | Orquesta todo con `uv run python main.py` (no recibe argumentos). |
+| `tests/` | — | 40 pruebas (`uv run pytest`) en `test_data_cleaning.py`, `test_model.py`, `test_eda.py` y `test_reported_results.py`: limpieza con datos sintéticos, cargador, ajuste (comparado con `numpy.polyfit`), división temporal, métricas y coherencia entre las tablas guardadas que cita este informe. |
+
+**Refactorización a clases.** El código se escribió primero con funciones (commit `d733b17`) y luego se pasó a clases (commit `3563eb1`). Se ejecutaron ambas versiones con los mismos datos y **todas las tablas, los datos procesados y las 11 figuras resultaron idénticos byte a byte** (comparación de ambos commits ejecutados con el mismo ZIP; las tablas y figuras de `results/` son las de ambas versiones), de modo que el cambio fue solo de organización y no altera ninguna cifra de este informe.
 
 ## 9. Métricas de evaluación y análisis crítico
 
@@ -295,7 +308,7 @@ $$MAE = \frac{1}{n}\sum |y_i - \hat{y}_i| \qquad MSE = \frac{1}{n}\sum (y_i - \h
 
 ### 9.2 Cálculo manual de MAE y RMSE (`results/tables/manual_metric_sample.csv`)
 
-Se usan **8 registros reales del periodo de prueba** (25 de agosto, cada 3 h) y las predicciones del **modelo completo**, redondeadas a 2 decimales. Ejemplo para i = 2: $\hat{y} = 177{,}0926 - 4{,}6139 \times 20{,}53 = 177{,}0926 - 94{,}7234 = 82{,}37$.
+Se usan **8 registros reales del periodo de prueba** (25 de agosto, cada 3 h) y las predicciones del **modelo completo**, calculadas con $x$ redondeada a 2 decimales y redondeadas ellas mismas a 2 decimales (por eso la predicción de las 00:00 es 84,72 aquí y 84,71 en `test_predictions.csv`, que usa $x$ sin redondear). Ejemplo para i = 2: $\hat{y} = 177{,}0926 - 4{,}6139 \times 20{,}53 = 177{,}0926 - 94{,}7234 = 82{,}37$.
 
 | i | Hora | $x_i$ | $y_i$ | $\hat{y}_i$ | $e_i$ | $\lvert e_i\rvert$ | $e_i^2$ |
 |---|---|---|---|---|---|---|---|
@@ -334,9 +347,9 @@ Este MAE de 3,12 es menor que el del periodo de prueba completo (5,37). Ocho hor
 
 1. **Utilidad frente a una referencia.** En la semana de prueba el modelo se equivoca en promedio 5,37 puntos de humedad, frente a 17,83 si se predijera siempre la media de entrenamiento: reduce el error absoluto en más de dos tercios. Esto, y no el valor de R² por sí solo, es la evidencia de que la temperatura aporta información real.
 2. **Qué significa R².** R² = 0,899 indica que la suma de errores al cuadrado del modelo es aproximadamente un 10 % de la que se obtendría prediciendo la media de la semana de prueba. **No significa que el modelo "acierte el 90 %"** de las veces ni que tenga un 90 % de exactitud.
-3. **Sesgo en la semana de prueba.** El residuo medio en prueba es **+4,42 puntos**, y el 81 % de los residuos son positivos: el modelo **subestima** la humedad de forma sistemática. A igual temperatura, la última semana fue más húmeda que las anteriores (humedad media de 71,20 % frente a 67,71 % en entrenamiento, con temperaturas medias parecidas: 23,91 °C frente a 23,71 °C). Una sola variable no capta estos cambios de masa de aire o de contenido de vapor.
-4. **Prueba mejor que entrenamiento.** Que el R² de prueba (0,899) supere al de entrenamiento (0,878) no demuestra que el modelo "generalice mejor". Se explica porque las semanas de entrenamiento incluyen días anómalos (por ejemplo, el 17 y 18 de agosto, nublados y húmedos), que quedan lejos de la recta.
-5. **No linealidad cerca de la saturación.** En el gráfico de residuos frente a predicciones, los residuos son negativos cuando la predicción supera ~92 %. La recta además **no está acotada**: para temperaturas menores de 16,71 °C predice más del 100 %, cosa físicamente imposible. Esto ocurrió en 10 horas del entrenamiento y en ninguna de prueba (máximo predicho 96,58 %).
+3. **Sesgo en la semana de prueba.** El residuo medio en prueba es **+4,42 puntos**, y el 81 % de los residuos son positivos: el modelo **subestima** la humedad de forma sistemática. A igual temperatura, la última semana fue más húmeda que las anteriores (humedad media de 71,20 % frente a 67,71 % en entrenamiento, con temperaturas medias parecidas: 23,91 °C frente a 23,71 °C). Con una sola variable el modelo no puede captar estos cambios (por ejemplo de masa de aire o de contenido de vapor); el dataset no incluye variables que permitan comprobar la causa. Es un sesgo, no un ruido aleatorio: si se restara el residuo medio, el R² de prueba subiría de 0,899 a 0,949 (cálculo sobre `test_predictions.csv`), coherente con que la correlación lineal en la semana de prueba (r = −0,975) es incluso más fuerte que en entrenamiento (r = −0,937).
+4. **Prueba mejor que entrenamiento.** Que el R² de prueba (0,899) supere al de entrenamiento (0,878) no demuestra que el modelo "generalice mejor". La evidencia disponible apunta a que el periodo de entrenamiento incluye días difíciles para la recta: del 10 al 13 de agosto hay cuatro días seguidos con residuo medio diario muy negativo (entre −5,3 y −13,3 puntos: la humedad real fue menor que la estimada; ver sección 4.8), y el 2 de agosto también tuvo un residuo medio de −9,9. Al excluir esos cuatro días, el R² de entrenamiento sube a 0,900 y el MAE baja a 5,41. En cambio, excluir el 17 y 18 de agosto casi no modifica el R² (0,878). Además, la varianza de la humedad es menor en la semana de prueba (392,5 frente a 447,7), y el R² depende de esa variabilidad. Estos cálculos de diagnóstico se hicieron sobre los residuos del modelo y no forman parte de `results/tables/`.
+5. **No linealidad cerca de la saturación.** En el gráfico de residuos frente a predicciones, los residuos tienden a ser negativos cuando la predicción supera ≈ 93 % (11 de las 12 horas de prueba, con residuo medio −1,97); en entrenamiento, con predicciones por encima de 92 % (60 horas) el residuo medio es −6,71. La recta además **no está acotada**: para temperaturas menores de 16,71 °C predice más del 100 %, cosa físicamente imposible. Esto ocurrió en 10 horas del entrenamiento y en ninguna de prueba (máximo predicho 96,58 %).
 6. **Independencia de los errores.** La autocorrelación de lag 1 de los residuos es 0,82 en prueba: el error de una hora predice el de la siguiente. Se viola el supuesto de independencia, así que los intervalos de confianza clásicos de los coeficientes no serían fiables. Las métricas de error sí siguen siendo válidas como descripción del desempeño.
 7. **¿Es útil?** Sirve para el objetivo planteado (estimación provisional y control de calidad del higrómetro), siempre que se tenga en cuenta un error típico de unos 5 a 6 puntos y cierto sesgo cuando cambian las condiciones de humedad de fondo. No sirve para pronosticar la humedad futura ni para aplicarse a otras estaciones sin volver a ajustarlo.
 
@@ -356,6 +369,8 @@ Este MAE de 3,12 es menor que el del periodo de prueba completo (5,37). Ocho hor
 - El único predictor deja sin explicar los cambios en el contenido de vapor, lo que produce sesgo en la semana de prueba.
 - La relación no es lineal cerca del 100 %, y la recta puede predecir valores imposibles.
 - Los residuos están autocorrelacionados, lo que viola el supuesto de independencia.
+- La estación se eligió por tener la correlación más fuerte con datos completos (calculada solo con el 1–24 de agosto), pero la diferencia con las demás estaciones es pequeña (de −0,8845 a −0,9371); el resultado no debe extrapolarse a otras estaciones sin reajustar.
+- Las estadísticas descriptivas, los valores atípicos y las gráficas exploratorias de la sección 4 usan las 744 horas (incluida la semana de prueba). Es un análisis descriptivo que no interviene en el ajuste, que solo usa el 1–24 de agosto, pero conviene tenerlo presente.
 - El ejemplo manual usa valores redondeados a 2 decimales.
 
 **Complejidad computacional**

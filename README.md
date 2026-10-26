@@ -65,6 +65,6 @@ uv run pytest
 ## Project layout
 
 - `main.py`: runs the complete analysis pipeline.
-- `src/`: data loading, cleaning, exploratory analysis, regression, and evaluation.
-- `tests/`: automated tests.
-- `docs/informe.md`: analysis report, if available in your checkout.
+- `src/`: data loading, cleaning, exploratory analysis, regression, evaluation, and shared plotting helpers. Each module defines a small class (`SiataLoader`, `DataCleaner`, `ExploratoryAnalysis`, `ModelDataPreparer`, `SimpleLinearRegression`, `RegressionMetrics`, `EvaluationPlotter`, `BasePlotter`).
+- `tests/`: automated tests (synthetic data, plus consistency checks of the saved tables in `results/tables/`).
+- `docs/informe.md`: academic report (in Spanish).
