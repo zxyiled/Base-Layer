@@ -39,6 +39,17 @@ class TestLinearRegression(unittest.TestCase):
         with self.assertRaises(ValueError):
             SimpleLinearRegression().fit([2, 2, 2], [1, 2, 3])
 
+    def test_constant_decimal_x_is_rejected(self):
+        # With decimals the closed-form denominator is not exactly 0 because of rounding.
+        for value, n in [(0.1, 10), (0.7, 5), (2.2, 576), (19.76, 576)]:
+            with self.subTest(value=value, n=n):
+                with self.assertRaises(ValueError):
+                    SimpleLinearRegression().fit([value] * n, list(range(n)))
+
+    def test_predict_before_fit_is_rejected(self):
+        with self.assertRaises(ValueError):
+            SimpleLinearRegression().predict([1.0])
+
     def test_sums_table(self):
         table = ModelDataPreparer.regression_sums_table([1.0, 2.0], [3.0, 4.0])
         self.assertEqual(table.loc["sum"].tolist(), [3.0, 7.0, 5.0, 11.0])
@@ -55,6 +66,23 @@ class TestSplitAndSampling(unittest.TestCase):
         self.assertEqual((len(train), len(test)), (48, 24))
         self.assertLess(train.index.max(), test.index.min())
 
+    def test_split_time_belongs_to_test_and_sets_do_not_overlap(self):
+        split_time = pd.Timestamp("2026-08-03")
+        train, test = ModelDataPreparer.chronological_split(self.data, split_time)
+        self.assertEqual(test.index.min(), split_time)
+        self.assertTrue(train.index.intersection(test.index).empty)
+        self.assertEqual(len(train) + len(test), len(self.data))
+
+    def test_model_data_drops_missing_hours_without_imputing(self):
+        data = self.data.copy()
+        data.loc[data.index[3], FEATURE] = np.nan
+        data.loc[data.index[5], TARGET] = np.nan
+        data["pressure"] = 1.0  # extra column must be ignored
+        selected = ModelDataPreparer().model_data(data)
+        self.assertEqual(list(selected.columns), [FEATURE, TARGET])
+        self.assertEqual(len(selected), len(data) - 2)
+        self.assertFalse(selected.isna().any().any())
+
     def test_every_third_hour_takes_eight_records_of_the_day(self):
         sample = ModelDataPreparer.every_third_hour(self.data, "2026-08-02")
         self.assertEqual(list(sample.index.hour), [0, 3, 6, 9, 12, 15, 18, 21])
@@ -70,6 +98,15 @@ class TestMetrics(unittest.TestCase):
         self.assertAlmostEqual(RegressionMetrics.rmse(actual, predicted), np.sqrt(5.0 / 3))
         # SSres = 5, SStot = 8
         self.assertAlmostEqual(RegressionMetrics.r2(actual, predicted), 1 - 5.0 / 8)
+
+    def test_predicting_the_mean_gives_zero_r2(self):
+        actual = [2.0, 4.0, 6.0, 8.0]
+        self.assertAlmostEqual(RegressionMetrics.r2(actual, [5.0] * 4), 0.0)
+
+    def test_metrics_row_reports_n_and_name(self):
+        row = RegressionMetrics.metrics_row("demo", [1.0, 2.0], [1.0, 3.0])
+        self.assertEqual((row["model"], row["n"]), ("demo", 2))
+        self.assertAlmostEqual(row["mae"], 0.5)
 
     def test_perfect_prediction(self):
         self.assertEqual(RegressionMetrics.r2([1.0, 2.0, 3.0], [1.0, 2.0, 3.0]), 1.0)
