@@ -53,9 +53,11 @@ class SimpleLinearRegression:
         x = np.asarray(x, dtype=float)
         y = np.asarray(y, dtype=float)
         n = len(x)
-        denominator = n * np.sum(x ** 2) - np.sum(x) ** 2
-        if n < 2 or denominator == 0:
+        # A constant x gives 0/0, but with decimals the formula's denominator is
+        # only approximately 0 because of rounding, so test for it directly.
+        if n < 2 or np.ptp(x) == 0:
             raise ValueError("Need at least two different x values to fit a line.")
+        denominator = n * np.sum(x ** 2) - np.sum(x) ** 2
         self.slope = (n * np.sum(x * y) - np.sum(x) * np.sum(y)) / denominator
         self.intercept = np.mean(y) - self.slope * np.mean(x)
         return self
