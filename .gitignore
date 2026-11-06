@@ -1,6 +1,14 @@
 # Ignore env
 .env
 
+# Ignore IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Ignore data
 .pytest_cache
 data/
