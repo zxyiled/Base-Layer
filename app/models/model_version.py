@@ -11,6 +11,18 @@ def utcnow() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def to_utc_iso(value: datetime | None) -> str | None:
+    """Serialize a timestamp as ISO 8601 in UTC.
+
+    SQLite drops the time zone, so naive values are treated as UTC.
+    """
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).isoformat()
+
+
 class ModelVersion(db.Model):
     """A trained artifact that can be activated to serve predictions."""
 
@@ -42,5 +54,5 @@ class ModelVersion(db.Model):
             "artifact_path": self.artifact_path,
             "labels": self.labels,
             "is_active": self.is_active,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": to_utc_iso(self.created_at),
         }

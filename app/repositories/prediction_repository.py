@@ -1,5 +1,6 @@
 """Database access for predictions."""
 
+from datetime import datetime
 from typing import Any
 
 from app.extensions import db
@@ -14,6 +15,8 @@ def create(
     confidence: float,
     top3: list[dict[str, Any]],
     original_filename: str | None = None,
+    file_size_bytes: int | None = None,
+    inference_ms: float | None = None,
     model_version_id: int | None = None,
 ) -> Prediction:
     """Insert one prediction."""
@@ -25,6 +28,8 @@ def create(
         confidence=confidence,
         top3=top3,
         original_filename=original_filename,
+        file_size_bytes=file_size_bytes,
+        inference_ms=inference_ms,
         model_version_id=model_version_id,
     )
     db.session.add(prediction)
@@ -43,13 +48,22 @@ def list_paginated(
     per_page: int = 20,
     label: str | None = None,
     source: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
 ) -> dict[str, Any]:
-    """Return a page of predictions filtered by label and/or source."""
+    """Return a page of predictions filtered by label, source and date range.
+
+    ``date_from`` is inclusive and ``date_to`` exclusive (``created_at`` in UTC).
+    """
     statement = db.select(Prediction)
     if label:
         statement = statement.where(Prediction.predicted_label == label)
     if source:
         statement = statement.where(Prediction.source == source)
+    if date_from:
+        statement = statement.where(Prediction.created_at >= date_from)
+    if date_to:
+        statement = statement.where(Prediction.created_at < date_to)
     statement = statement.order_by(Prediction.created_at.desc(), Prediction.id.desc())
     return paginate(statement, page=page, per_page=per_page)
 
