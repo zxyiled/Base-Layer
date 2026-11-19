@@ -2,11 +2,10 @@
 
 from typing import Any
 
-import click
 from flask import Flask
 
 from app.config import Config
-from app.extensions import db
+from app.extensions import db, migrate
 
 
 def create_app(overrides: dict[str, Any] | None = None) -> Flask:
@@ -24,14 +23,9 @@ def create_app(overrides: dict[str, Any] | None = None) -> Flask:
         raise RuntimeError("DATABASE_URL is not set. Copy .env.example to .env and configure it.")
 
     db.init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         from app import models  # noqa: F401  (register the models' metadata)
-
-    @app.cli.command("init-db")
-    def init_db() -> None:
-        """Create every table declared by the models."""
-        db.create_all()
-        click.echo("Tablas creadas.")
 
     return app

@@ -3,7 +3,7 @@
 from typing import Any
 
 from app.extensions import db
-from app.models.model_version import utcnow
+from app.models.model_version import to_utc_iso, utcnow
 
 
 class AppLog(db.Model):
@@ -29,5 +29,5 @@ class AppLog(db.Model):
             "logger": self.logger,
             "message": self.message,
             "context": self.context,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "created_at": to_utc_iso(self.created_at),
         }
