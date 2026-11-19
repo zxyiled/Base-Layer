@@ -37,6 +37,24 @@ Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes
 
 `ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se hará en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
 
+## API REST
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `app/api/v1/__init__.py` | Crea el blueprint `api_v1` con prefijo `/api/v1` y registra los módulos de rutas. |
+| `app/api/v1/predictions.py` | `POST /predictions` (201) y `GET /predictions` / `GET /predictions/<id>` con filtros y paginación. |
+| `app/api/v1/stats.py` | `GET /stats`. |
+| `app/api/v1/model.py` | `GET /model`. |
+| `app/api/v1/logs.py` | `GET /logs?limit=`. |
+| `app/api/v1/health.py` | `GET /health` con `SELECT 1` contra la base de datos. |
+| `app/api/v1/schemas.py` | Validación de parámetros (`page`, `per_page`, fechas ISO 8601, `source`) y sobre de error. |
+| `app/api/v1/dependencies.py` | Construye `ModelInfoService` y registra una sola vez la versión activa del modelo. |
+| `app/api/v1/errors.py` | Traduce `ServiceError` y `HTTPException` al sobre `{"error": {...}}`. |
+
+`create_app()` registra el blueprint y los manejadores de error. Cada ruta solo valida la entrada, llama a un servicio y serializa la respuesta. `POST /predictions` exige `multipart/form-data`, lee `image`, acepta `source` opcional y devuelve `201`. Los formatos aceptados por Pillow son JPEG, PNG y WEBP; un formato válido distinto responde `415` y un archivo corrupto `422`. Flask aplica `MAX_CONTENT_LENGTH` (10 MB por defecto) y responde `413`.
+
+La API no accede a la base de datos ni al modelo directamente: usa `PredictionService`, `HistoryService`, `StatsService`, `ModelInfoService` y `LogService`. El `model_version_id` se resuelve en la primera predicción con `ModelInfoService.ensure_active_version()` y se guarda en `app.extensions` para reutilizarlo. `docs/api.md` es el contrato que consume el frontend.
+
 ## Persistencia
 
 | Componente | Responsabilidad |

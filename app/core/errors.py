@@ -36,6 +36,12 @@ class InvalidImageError(ServiceError):
     code = "invalid_image"
 
 
+class UnsupportedImageTypeError(ServiceError):
+    """The image decoded correctly but its format is not accepted."""
+
+    code = "unsupported_media_type"
+
+
 class NotFoundError(ServiceError):
     """The requested resource does not exist."""
 

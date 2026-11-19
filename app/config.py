@@ -38,6 +38,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = get_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+    MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH", str(10 * 1024 * 1024)))
     MODEL_ARTIFACTS_DIR = os.getenv("MODEL_ARTIFACTS_DIR")
     MODEL_METRICS_FILE = os.getenv("MODEL_METRICS_FILE")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
