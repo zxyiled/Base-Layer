@@ -38,6 +38,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = get_database_url()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
+    MODEL_ARTIFACTS_DIR = os.getenv("MODEL_ARTIFACTS_DIR")
+    MODEL_METRICS_FILE = os.getenv("MODEL_METRICS_FILE")
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE = os.getenv("LOG_FILE", str(ROOT_DIR / "logs" / "app.log"))
     LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", "1000000"))
