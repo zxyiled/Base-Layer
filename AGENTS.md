@@ -61,8 +61,8 @@ routes (api / web)  →  services  →  repositories  →  models (SQLAlchemy)
 
 ### Git y versionado
 
-- **Rama base de integración: `ML-projects`** (debe mantenerse estable: con pruebas pasando). **Una rama por módulo**, creada desde la rama base (`git switch -c modulo-<n>-<nombre>`). Un commit por módulo cerrado. Al cerrar, una persona fusiona el módulo en `ML-projects` (`git merge --no-ff`) y el resto actualiza su rama desde ahí. Antes de la entrega, la rama que se entrega (la predeterminada del repositorio remoto) debe contener todo el trabajo.
-- **Los agentes no hacen `git push` ni mergean a `ML-projects`**: lo hace una persona al cerrar el módulo.
+- **Rama base de integración: `ML-project`** (debe mantenerse estable: con pruebas pasando). **Una rama por módulo**, creada desde la rama base (`git switch -c modulo-<n>-<nombre>`). Un commit por módulo cerrado. Al cerrar, una persona fusiona el módulo en `ML-project` (`git merge --no-ff`) y el resto actualiza su rama desde ahí. Antes de la entrega, la rama que se entrega (la predeterminada del repositorio remoto) debe contener todo el trabajo.
+- **Los agentes no hacen `git push` ni mergean a `ML-project`**: lo hace una persona al cerrar el módulo.
 - Mensaje: `<tipo>(<módulo>): descripción en español`. Tipos: `feat`, `fix`, `docs`, `test`, `build`, `chore`. Ejemplo: `feat(ml): entrenamiento y evaluación del clasificador`.
 - Agrega archivos **por ruta explícita**; nunca `git add -A` ni `git add .`. Antes de commitear, revisa `git status` y confirma que no entran `.env`, `data/raw/`, `logs/`, `uploads/`, caches ni carpetas de herramientas.
 - **Se versiona solo lo necesario:** código (`app/`, `ml_training/`, `tests/`), `docs/`, `README.md`, `pyproject.toml`, `uv.lock`, `.python-version`, `pytest.ini`, archivos de Docker, `.env.example`, `.dockerignore`, `data/processed/`, `data/real_test/`, el artefacto del modelo, `AGENTS.md` y `CLAUDE.md`.
