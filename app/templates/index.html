@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Clasifica frutas en imágenes con cámara o subida de archivo y consulta el historial de predicciones.">
+    <title>Clasificador de frutas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js" defer></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido principal</a>
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="14" r="7"></circle>
+            <path d="M12 7V4"></path>
+            <path d="M12 5c2-1.6 4.2-1.6 5.8-.2-.6 2-2.2 3.1-4.3 3"></path>
+          </svg>
+          <div>
+            <h1>Clasificador de frutas</h1>
+            <p class="brand-subtitle">Fruits-360 · 8 clases · modelo local</p>
+          </div>
+        </div>
+        <div id="health-badge" class="badge badge-neutral" role="status">Comprobando servicio…</div>
+      </div>
+    </header>
+
+    <main id="contenido" class="container" tabindex="-1">
+      <div id="global-alert" class="alert alert-error" role="alert" tabindex="-1" aria-labelledby="error-title" hidden>
+        <h2 id="error-title">Revisa estos puntos</h2>
+        <ul id="error-list"></ul>
+      </div>
+
+      <div class="grid grid-classify">
+        <section class="card" aria-labelledby="titulo-clasificar">
+          <h2 id="titulo-clasificar">Clasificar una imagen</h2>
+
+          <h3>Vista previa de la cámara</h3>
+          <div class="media-frame">
+            <video id="camera-preview" autoplay playsinline muted aria-label="Vista previa de la cámara"></video>
+            <p id="camera-placeholder" class="media-placeholder">Activa la cámara para ver la vista previa.</p>
+          </div>
+          <p id="camera-status" class="hint" role="status">La cámara solo funciona en localhost o con HTTPS.</p>
+          <div class="button-row">
+            <button type="button" id="camera-start" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="7" width="18" height="13" rx="3"></rect><circle cx="12" cy="13.5" r="3.5"></circle><path d="M8 7l1.5-2h5L16 7"></path></svg>
+              Activar cámara
+            </button>
+            <button type="button" id="camera-stop" class="btn btn-secondary" disabled>Detener cámara</button>
+            <button type="button" id="camera-capture" class="btn btn-accent" disabled>Capturar y clasificar</button>
+          </div>
+          <div class="button-row">
+            <button type="button" id="continuous-start" class="btn btn-secondary" disabled>Iniciar modo continuo</button>
+            <button type="button" id="continuous-stop" class="btn btn-secondary" disabled>Detener modo continuo</button>
+            <span id="continuous-status" class="hint" role="status"></span>
+          </div>
+
+          <hr class="divider">
+
+          <h3>Subir una imagen</h3>
+          <form id="upload-form" novalidate>
+            <div class="field">
+              <label for="image-upload">Archivo de imagen (JPEG, PNG o WEBP, máximo 10 MB)</label>
+              <input type="file" id="image-upload" name="image" accept="image/jpeg,image/png,image/webp" aria-describedby="upload-hint image-upload-error">
+              <p id="upload-hint" class="hint">Se comprueba el contenido de la imagen en el servidor.</p>
+              <p id="image-upload-error" class="field-error" hidden></p>
+            </div>
+            <img id="upload-preview" class="upload-preview" alt="Vista previa de la imagen seleccionada" width="240" height="180" hidden>
+            <button type="submit" id="upload-submit" class="btn btn-primary" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 16V4m0 0L8 8m4-4l4 4"></path><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg>
+              Clasificar imagen
+            </button>
+          </form>
+
+          <details class="details">
+            <summary>Analizar un video en el navegador</summary>
+            <p class="hint">Se muestrean hasta 8 fotogramas y se envían como imágenes al mismo endpoint de predicción.</p>
+            <div class="field">
+              <label for="video-upload">Archivo de video</label>
+              <input type="file" id="video-upload" accept="video/*" aria-describedby="video-status">
+            </div>
+            <button type="button" id="video-analyze" class="btn btn-secondary" disabled>Analizar video</button>
+            <p id="video-status" class="hint" role="status"></p>
+          </details>
+        </section>
+
+        <section class="card" id="result" aria-labelledby="titulo-resultado">
+          <h2 id="titulo-resultado">Resultado</h2>
+          <p id="result-empty" class="empty-state">Todavía no hay predicciones. Captura o sube una imagen.</p>
+          <div id="result-content" hidden>
+            <p class="eyebrow">Etiqueta predicha</p>
+            <p id="result-label" class="result-label">—</p>
+            <div class="confidence">
+              <div class="confidence-head">
+                <span>Confianza</span>
+                <strong id="result-confidence-text">—</strong>
+              </div>
+              <div id="result-confidence-bar" class="progress" role="progressbar" aria-label="Confianza de la predicción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div id="result-confidence-fill" class="progress-fill"></div>
+              </div>
+            </div>
+            <h3>Top 3</h3>
+            <ol id="result-top3" class="top3"></ol>
+            <dl class="meta-list">
+              <div><dt>Fuente</dt><dd id="result-source">—</dd></div>
+              <div><dt>Inferencia</dt><dd id="result-inference">—</dd></div>
+              <div><dt>Fecha</dt><dd id="result-date">—</dd></div>
+            </dl>
+            <p id="result-note" class="hint" hidden></p>
+          </div>
+        </section>
+      </div>
+
+      <section class="card" aria-labelledby="titulo-historial">
+        <div class="section-head">
+          <div>
+            <h2 id="titulo-historial">Historial</h2>
+            <p class="hint">Últimas predicciones guardadas, de la más reciente a la más antigua.</p>
+          </div>
+          <button type="button" id="history-refresh" class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 11a8 8 0 1 0-2.3 5.7"></path><path d="M20 5v6h-6"></path></svg>
+            Actualizar
+          </button>
+        </div>
+        <div class="filters">
+          <div class="field">
+            <label for="history-label">Etiqueta</label>
+            <input type="text" id="history-label" placeholder="manzana" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="history-source">Fuente</label>
+            <select id="history-source">
+              <option value="">Todas</option>
+              <option value="camera">Cámara</option>
+              <option value="upload">Subida</option>
+              <option value="video">Video</option>
+            </select>
+          </div>
+        </div>
+        <p id="history-empty" class="empty-state">No hay predicciones todavía.</p>
+        <div class="table-wrap">
+          <table id="history-table" hidden>
+            <caption class="sr-only">Historial de predicciones</caption>
+            <thead>
+              <tr><th scope="col">Fecha</th><th scope="col">Etiqueta</th><th scope="col">Confianza</th><th scope="col">Fuente</th><th scope="col">Tiempo (ms)</th></tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <button type="button" id="history-prev" class="btn btn-secondary" disabled>Anterior</button>
+          <span id="history-page" role="status">Página 1</span>
+          <button type="button" id="history-next" class="btn btn-secondary" disabled>Siguiente</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="titulo-estadisticas">
+        <div class="section-head">
+          <div>
+            <h2 id="titulo-estadisticas">Estadísticas</h2>
+            <p class="hint">Resumen de todas las predicciones almacenadas.</p>
+          </div>
+          <button type="button" id="stats-refresh" class="btn btn-ghost">Actualizar</button>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><span>Predicciones</span><strong id="stats-total">—</strong></div>
+          <div class="kpi"><span>Confianza media</span><strong id="stats-confidence">—</strong></div>
+        </div>
+        <p id="stats-empty" class="empty-state" hidden>Todavía no hay datos para las gráficas.</p>
+        <div class="charts" id="charts">
+          <figure class="chart-box">
+            <figcaption>Predicciones por etiqueta</figcaption>
+            <canvas id="chart-labels" role="img" aria-label="Gráfico de barras de predicciones por etiqueta"></canvas>
+            <table id="table-labels" class="data-table">
+              <caption class="sr-only">Datos del gráfico de etiquetas</caption>
+              <thead><tr><th scope="col">Etiqueta</th><th scope="col">Cantidad</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </figure>
+          <figure class="chart-box">
+            <figcaption>Predicciones por fuente</figcaption>
+            <canvas id="chart-sources" role="img" aria-label="Gráfico de barras de predicciones por fuente"></canvas>
+            <table id="table-sources" class="data-table">
+              <caption class="sr-only">Datos del gráfico de fuentes</caption>
+              <thead><tr><th scope="col">Fuente</th><th scope="col">Cantidad</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </figure>
+        </div>
+      </section>
+
+      <div class="grid grid-secondary">
+        <section class="card" id="modelo" aria-labelledby="titulo-modelo">
+          <h2 id="titulo-modelo">Información del modelo</h2>
+          <p id="model-empty" class="empty-state">Cargando información…</p>
+          <div id="model-content" hidden>
+            <dl class="meta-list">
+              <div><dt>Arquitectura</dt><dd id="model-architecture">—</dd></div>
+              <div><dt>Clases</dt><dd id="model-classes">—</dd></div>
+              <div><dt>Exactitud oficial</dt><dd id="model-accuracy">—</dd></div>
+              <div><dt>Prueba real</dt><dd id="model-real-test">—</dd></div>
+            </dl>
+            <div id="model-labels" class="chips" aria-label="Clases del modelo"></div>
+            <details class="details">
+              <summary>Preprocesamiento y entrenamiento</summary>
+              <pre id="model-details" class="code-block"></pre>
+            </details>
+          </div>
+        </section>
+
+        <section class="card" id="logs" aria-labelledby="titulo-logs">
+          <div class="section-head">
+            <h2 id="titulo-logs">Registros</h2>
+            <button type="button" id="logs-refresh" class="btn btn-ghost">Actualizar</button>
+          </div>
+          <p id="logs-empty" class="empty-state">No hay entradas en el registro.</p>
+          <ol id="logs-list" class="log-list" hidden></ol>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Proyecto académico · clasificación local con transfer learning · sin datos de terceros en tiempo de ejecución.</p>
+      </div>
+    </footer>
+
+    <canvas id="frame-canvas" hidden aria-hidden="true"></canvas>
+    <video id="video-source" hidden playsinline preload="metadata" aria-hidden="true"></video>
+  </body>
+</html>

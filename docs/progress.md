@@ -11,7 +11,7 @@ La rama base de integración es `ML-project`.
 | M4 · Servicios e inferencia | Cerrado y fusionado en `ML-project` (PR #11) | Agente de backend | `modulo-4-servicios` |
 | M5 · API | Cerrado y fusionado en `ML-project` (PR #12) | Agente de backend | `modulo-5-api` |
 | M6 · Docker | Versión inicial fusionada en `ML-project` (PR #13). Corrección verificada, pendiente de PR y merge por una persona. | Agente de backend | `modulo-6-docker`, `fix/modulo-6-docker` |
-| M7 · Frontend | Pendiente | Otro compañero (nombre por registrar) | Por registrar |
+| M7 · Frontend | Cerrado en la rama `modulo-7-Frontend` (pendiente de merge por una persona) | Agente de frontend | `modulo-7-Frontend` |
 | M8 · README, documentación final y diapositivas | Pendiente | Por registrar | Por registrar |
 
 El cierre de M1 reportó **25 pruebas aprobadas** con `uv run pytest`. La cobertura de ML incluye preprocesamiento, partición con datos sintéticos y con el manifiesto versionado, predictor con un artefacto mínimo y evaluación con la prueba real pendiente. [Pruebas de ML](../tests/test_ml/)
@@ -36,6 +36,8 @@ La corrección de M6 reportó **130 pruebas aprobadas** con `uv run pytest` (3 n
 | API | `/api/v1/health` y `/api/v1/model` respondieron `200`. Una predicción real respondió `201` con etiqueta `fresa` y confianza de 0,99999. |
 | Errores | Imagen corrupta `422`, GIF `415`, subida de 11 MB `413` en español, `404` y `405` de la API en español y `404` fuera de `/api/` en HTML. |
 | Contenedor | uid 1000, `/app/app` de `root` en solo lectura para `appuser`, `/app/logs` escribible por `appuser` y `sklearn` ausente. |
+
+La verificación de M7 reportó **133 pruebas aprobadas** con `uv run pytest` (3 nuevas). Cubren el registro del blueprint web, el HTML en español con cámara, subida, resultado, historial, estadísticas, modelo y registros, y el servicio de los archivos estáticos. `node --check` validó el JavaScript y `flask --app wsgi routes` mostró `web.index` en `/` junto a las siete rutas de la API. La interfaz consume solo `docs/api.md`; no se añadieron endpoints ni se modificó la lógica de negocio. [Pruebas web](../tests/test_web/)
 
 ## Diferencias con el plan
 
