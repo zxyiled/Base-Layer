@@ -73,7 +73,7 @@ La aplicación escribe sus logs en la consola y en `logs/app.log` por defecto. L
 
 ## Interfaz web
 
-Abre `http://localhost:8000/` tras levantar Docker (o `http://127.0.0.1:5000/` con `uv run flask --app wsgi run --debug`). La página sirve una única vista en Jinja que consume los endpoints de `docs/api.md` desde el navegador: clasificación por cámara o archivo, resultado con confianza y top-3, historial paginado, estadísticas con Chart.js, información del modelo y registros.
+Abre `http://localhost:8000/` tras levantar Docker (o `http://127.0.0.1:5000/` con `uv run flask --app wsgi run --debug`). La página sirve una única vista en Jinja que consume los endpoints de `docs/api.md` desde el navegador: clasificación por cámara o archivo, resultado con confianza y top-3, historial paginado, estadísticas con Chart.js servido desde `app/static/vendor/` (sin CDN), información del modelo y registros.
 
 La cámara del navegador requiere `localhost` o HTTPS. Si el permiso se deniega, no hay cámara o el contexto no es seguro, la interfaz lo indica y permite subir una imagen. El modo continuo y el análisis de video funcionan en el navegador: envían fotogramas al mismo endpoint de predicción y no necesitan cambios en el backend. [Arquitectura de la interfaz](docs/architecture.md#interfaz-web-m7)
 

@@ -37,7 +37,9 @@ La corrección de M6 reportó **130 pruebas aprobadas** con `uv run pytest` (3 n
 | Errores | Imagen corrupta `422`, GIF `415`, subida de 11 MB `413` en español, `404` y `405` de la API en español y `404` fuera de `/api/` en HTML. |
 | Contenedor | uid 1000, `/app/app` de `root` en solo lectura para `appuser`, `/app/logs` escribible por `appuser` y `sklearn` ausente. |
 
-La verificación de M7 reportó **133 pruebas aprobadas** con `uv run pytest` (3 nuevas). Cubren el registro del blueprint web, el HTML en español con cámara, subida, resultado, historial, estadísticas, modelo y registros, y el servicio de los archivos estáticos. `node --check` validó el JavaScript y `flask --app wsgi routes` mostró `web.index` en `/` junto a las siete rutas de la API. La interfaz consume solo `docs/api.md`; no se añadieron endpoints ni se modificó la lógica de negocio. [Pruebas web](../tests/test_web/)
+La verificación de M7 reportó **134 pruebas aprobadas** con `uv run pytest` (4 nuevas). Cubren el registro del blueprint web, el HTML en español con cámara, subida, resultado, historial, estadísticas, modelo y registros, y el servicio de los archivos estáticos. `node --check` validó el JavaScript y `flask --app wsgi routes` mostró `web.index` en `/` junto a las siete rutas de la API. La interfaz consume solo `docs/api.md`; no se añadieron endpoints ni se modificó la lógica de negocio. [Pruebas web](../tests/test_web/)
+
+El ajuste posterior de M7 sirve Chart.js 4.6.1 desde `app/static/vendor/` (sin CDN) y usa una única utilidad `sampleFrame()` para capturar fotogramas de la cámara y del video. Las tipografías de Google Fonts son opcionales: si no cargan, la interfaz usa las fuentes de respaldo del sistema. [Pruebas web](../tests/test_web/)
 
 ## Diferencias con el plan
 

@@ -63,7 +63,8 @@ La API no accede a la base de datos ni al modelo directamente: usa `PredictionSe
 | `app/web/routes.py` | `GET /` renderiza la plantilla única de la interfaz. |
 | `app/templates/index.html` | Estructura Jinja: cámara, subida, video, resultado, historial, estadísticas, modelo y registros. |
 | `app/static/css/styles.css` | Tokens de diseño, tema claro/oscuro, diseño responsive y `prefers-reduced-motion`. |
-| `app/static/js/app.js` | Llamadas `fetch` a la API, captura de cámara, muestreo de video y gráficas con Chart.js. |
+| `app/static/vendor/chart.umd.min.js` | Chart.js 4.6.1 servido localmente, sin dependencia de CDN. |
+| `app/static/js/app.js` | Llamadas `fetch` a la API, `sampleFrame()` compartido por cámara y video, y gráficas con Chart.js. |
 
 `create_app()` registra este blueprint junto al de la API. La ruta web solo sirve HTML: **no llama a servicios ni a la base de datos**. El navegador consume los siete endpoints bajo `/api/v1` con `fetch` y muestra el sobre de error en un resumen accesible y enfocable. Las imágenes nunca se registran en logs.
 

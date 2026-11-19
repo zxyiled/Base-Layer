@@ -46,10 +46,11 @@ def test_index_renders_the_spanish_interface(client) -> None:
         "Estadísticas",
         "Información del modelo",
         "Registros",
-        "chart.umd.min.js",
+        "/static/vendor/chart.umd.min.js",
     ]
     for fragment in expected_fragments:
         assert fragment in html
+    assert "cdn.jsdelivr.net" not in html
 
 
 def test_static_assets_are_served(client) -> None:
@@ -66,3 +67,14 @@ def test_static_assets_are_served(client) -> None:
     assert "predictions: `${API_BASE}/predictions`" in source
     assert "stats: `${API_BASE}/stats`" in source
     assert "Permiso de cámara denegado" in source
+    assert "function sampleFrame" in source
+    assert "drawToCanvas" not in source
+    assert "captureVideoFrame" not in source
+
+
+def test_chart_js_is_served_locally(client) -> None:
+    response = client.get("/static/vendor/chart.umd.min.js")
+
+    assert response.status_code == 200
+    assert "javascript" in response.content_type
+    assert "Chart.js v4.6.1" in response.get_data(as_text=True)
