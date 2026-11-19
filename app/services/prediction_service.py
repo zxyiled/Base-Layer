@@ -7,21 +7,34 @@ from typing import Any
 
 from PIL import Image, UnidentifiedImageError
 
-from app.core.errors import InvalidImageError, ModelUnavailableError, UnsupportedSourceError
+from app.core.errors import (
+    InvalidImageError,
+    ModelUnavailableError,
+    UnsupportedImageTypeError,
+    UnsupportedSourceError,
+)
 from app.models.prediction import SOURCES
 from app.repositories import prediction_repository
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_IMAGE_FORMATS = frozenset({"JPEG", "PNG", "WEBP"})
+
 
 def decode_image(image_bytes: bytes) -> Image.Image:
-    """Decode image bytes with Pillow, rejecting corrupt or non-image data.
+    """Decode image bytes with Pillow, rejecting corrupt or unsupported data.
 
     The extension and ``Content-Type`` are never trusted: only a successful
-    ``Image.open``/``load`` proves the bytes are an image.
+    ``Image.open``/``load`` proves the bytes are an image. Formats outside
+    ``ALLOWED_IMAGE_FORMATS`` raise ``UnsupportedImageTypeError`` (HTTP 415).
     """
     try:
         with Image.open(io.BytesIO(image_bytes)) as image:
+            if image.format not in ALLOWED_IMAGE_FORMATS:
+                raise UnsupportedImageTypeError(
+                    f"Formato de imagen no soportado: {image.format or 'desconocido'}. "
+                    "Formatos permitidos: JPEG, PNG y WEBP."
+                )
             image.load()
             return image.copy()
     except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as exc:
