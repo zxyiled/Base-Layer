@@ -49,7 +49,7 @@ Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes
 | `app/api/v1/health.py` | `GET /health` con `SELECT 1` contra la base de datos. |
 | `app/api/v1/schemas.py` | Validación de parámetros (`page`, `per_page`, fechas ISO 8601, `source`) y sobre de error. |
 | `app/api/v1/dependencies.py` | Construye `ModelInfoService` y registra una sola vez la versión activa del modelo. |
-| `app/api/v1/errors.py` | Traduce `ServiceError` y `HTTPException` al sobre `{"error": {...}}`. |
+| `app/api/v1/errors.py` | Devuelve el sobre `{"error": {...}}` para errores HTTP e inesperados bajo `/api/` y páginas HTML de Flask fuera de ese prefijo. El manejador de `ServiceError` devuelve JSON en toda la aplicación. |
 
 `create_app()` registra el blueprint y los manejadores de error. Cada ruta solo valida la entrada, llama a un servicio y serializa la respuesta. `POST /predictions` exige `multipart/form-data`, lee `image`, acepta `source` opcional y devuelve `201`. Los formatos aceptados por Pillow son JPEG, PNG y WEBP; un formato válido distinto responde `415` y un archivo corrupto `422`. Flask aplica `MAX_CONTENT_LENGTH` (10 MB por defecto) y responde `413`.
 

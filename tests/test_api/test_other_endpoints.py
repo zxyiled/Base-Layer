@@ -97,3 +97,22 @@ def test_health_returns_503_when_the_database_is_unreachable(tmp_path):
 def test_unknown_route_returns_json_404(client):
     response = client.get("/api/v1/does-not-exist")
     assert_error(response, 404, "not_found")
+
+
+def test_api_http_errors_are_in_spanish(client):
+    not_found = client.get("/api/v1/does-not-exist").get_json()["error"]
+    assert not_found["message"] == "El recurso solicitado no existe."
+    response = client.delete("/api/v1/stats")
+    assert_error(response, 405, "method_not_allowed")
+    assert response.get_json()["error"]["message"] == "Método no permitido para esta ruta."
+
+
+def test_custom_http_descriptions_are_kept(client):
+    response = client.post("/api/v1/predictions", json={})
+    assert "multipart/form-data" in response.get_json()["error"]["message"]
+
+
+def test_routes_outside_the_api_keep_html_errors(client):
+    response = client.get("/pagina-que-no-existe")
+    assert response.status_code == 404
+    assert response.mimetype == "text/html"
