@@ -11,7 +11,7 @@ Proyecto académico: aplicación Flask que clasifica frutas en imágenes (cámar
 ### Alcance cerrado
 
 - Sin autenticación, usuarios ni microservicios. Sin consumir modelos o datos de APIs de terceros.
-- Sin funcionalidades fuera del plan aprobado. Si dudas, pregunta.
+- Sin funcionalidades fuera del plan aprobado. Si dudas, pregunta. Ampliaciones aprobadas al plan: (1) modo continuo de cámara (una predicción cada 1 a 2 s, con iniciar/detener) y (2) análisis de video por muestreo de fotogramas **en el navegador**, enviando cada fotograma al mismo endpoint de predicción de imagen (`source=video`) y agregando el resultado en la interfaz; el backend no procesa video. El endpoint de predicción acepta el campo opcional `source` (`camera`, `upload`, `video`).
 - No modifiques el `.dockerignore` existente.
 - No registres los bytes de las imágenes en logs. Nunca subas datos ni imágenes del dataset a Git.
 - **No recorras ni escanees `data/raw/` completo** (decenas de miles de imágenes). Trabaja con carpetas de clase, el manifiesto de `data/processed/` y contadores por carpeta.
