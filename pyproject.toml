@@ -8,13 +8,9 @@ dependencies = [
     "flask-migrate>=4.1.0",
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=27.0.1",
-    "matplotlib>=3.10.9",
-    "pandas>=2.3.3",
     "pillow>=12.3.0",
     "psycopg[binary]>=3.3.8",
     "python-dotenv>=1.2.4",
-    "requests>=2.34.2",
-    "scikit-learn>=1.7.2",
     "torch>=2.14.1",
     "torchvision>=0.29.2",
 ]
@@ -22,6 +18,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+]
+train = [
+    "matplotlib>=3.10.9",
+    "scikit-learn>=1.7.2",
 ]
 
 [[tool.uv.index]]
@@ -32,3 +32,8 @@ explicit = true
 [tool.uv.sources]
 torch = [{ index = "pytorch-cpu" }]
 torchvision = [{ index = "pytorch-cpu" }]
+
+[tool.uv]
+# Local `uv sync`/`uv run` install everything; the Docker image skips the
+# training-only group with `--no-default-groups`.
+default-groups = ["dev", "train"]

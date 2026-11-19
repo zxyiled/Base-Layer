@@ -1,16 +1,16 @@
 # API REST
 
-Prefijo: `/api/v1`. El modelo se carga una vez al arrancar. Todas las respuestas son JSON, salvo la carga de archivos, que entra como `multipart/form-data`.
+La API usa el prefijo `/api/v1` y responde en JSON. La carga de archivos usa `multipart/form-data`. El modelo se carga una vez al arrancar.
 
 ## Errores
 
-Formato único:
+Los errores HTTP e inesperados usan el siguiente sobre JSON solo en rutas bajo `/api/`. Fuera de ese prefijo, Flask devuelve sus páginas de error HTML estándar. Si ocurre un error inesperado, se registra en el log y la respuesta fuera de la API es `500` en HTML. El manejador global de `ServiceError` también devuelve JSON si una ruta web lanza esa excepción.
 
 ```json
 {"error": {"code": "validation_error", "message": "El archivo 'image' está vacío.", "details": {"field": "image"}}}
 ```
 
-`details` puede ser `null` o un objeto. Códigos HTTP usados:
+`details` puede ser `null` o un objeto.
 
 | HTTP | `code` | Cuándo |
 | --- | --- | --- |
@@ -24,6 +24,16 @@ Formato único:
 | `422` | `invalid_image` | Los bytes no se pueden decodificar como imagen (archivo corrupto). |
 | `500` | `internal_error` | Error inesperado del servidor. |
 | `503` | `model_unavailable` | El artefacto del modelo no está cargado. |
+
+La API traduce al español las descripciones predeterminadas de Werkzeug y conserva las descripciones propias. Por ejemplo, `POST /predictions` sin `multipart/form-data` devuelve `415` con el mensaje «La predicción requiere multipart/form-data con el campo 'image'.».
+
+| HTTP | `message` predeterminado |
+| --- | --- |
+| `400` | Solicitud inválida. |
+| `404` | El recurso solicitado no existe. |
+| `405` | Método no permitido para esta ruta. |
+| `413` | El archivo supera el tamaño máximo permitido. |
+| `415` | Tipo de contenido no soportado. |
 
 ## Paginación
 
