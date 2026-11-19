@@ -39,12 +39,58 @@ Tras cambiar los modelos, genera una revisión y examina el archivo en `migratio
 uv run flask --app wsgi db migrate -m "describe el cambio"
 ```
 
-Aplica la revisión con `db upgrade` y comprueba con `db check` si quedan diferencias detectables entre el esquema y los modelos. En M6, `entrypoint.sh` ejecutará `flask db upgrade` antes de arrancar la aplicación.
+Aplica la revisión con `db upgrade` y comprueba con `db check` si quedan diferencias detectables entre el esquema y los modelos. En Docker, `entrypoint.sh` ejecuta `flask --app wsgi db upgrade` antes de arrancar Gunicorn.
 
 > La cámara del navegador solo funciona en `localhost` o con HTTPS.
+
+## Docker
+
+`docker-compose.yml` levanta dos servicios: `db` (PostgreSQL 17.6) y `app` (la imagen construida desde el `Dockerfile`).
+
+1. Crea el `.env` a partir del ejemplo y ajusta las credenciales. El archivo no se versiona.
+
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Construye y levanta los servicios.
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+   El contenedor `app` espera a que `db` esté sana (`pg_isready`), aplica las migraciones y arranca `gunicorn` en el puerto `8000`.
+
+3. Comprueba el estado y una predicción real.
+
+   ```sh
+   curl http://localhost:8000/api/v1/health
+   curl -F "image=@foto.png" -F "source=upload" http://localhost:8000/api/v1/predictions
+   ```
+
+4. Para ver los logs de la aplicación y detener el entorno.
+
+   ```sh
+   docker compose logs -f app
+   docker compose down
+   ```
+
+`docker compose down -v` elimina además el volumen `db_data` con las predicciones.
+
+Detalles de la imagen:
+
+| Aspecto | Implementación |
+| --- | --- |
+| Base | `python:3.12.11-slim-bookworm` con `uv` `0.12.13` (versiones fijas). |
+| Dependencias | `uv sync --locked --no-dev` con PyTorch CPU desde el índice de `pyproject.toml`. |
+| Copia | Selectiva: `app/`, `migrations/`, `ml_training/reports/metrics.json`, `wsgi.py`, `entrypoint.sh`, `README.md`, `pyproject.toml` y `uv.lock`. El dataset y `.env` nunca entran en la imagen. |
+| Usuario | `appuser` (uid 1000), sin root. `logs/` se crea dentro de `/app`. |
+| Servidor | Gunicorn con **un worker y cuatro hilos** en el puerto `8000`; así se evita que varios procesos roten el mismo log y se carga el modelo una sola vez. |
+| Migraciones | `entrypoint.sh` ejecuta `flask --app wsgi db upgrade` al arrancar. |
+| Métricas | `ml_training/reports/metrics.json` se copia a la imagen para que `/api/v1/model` las muestre. |
 
 ## Logs de aplicación
 
 La aplicación escribe en `stderr` y en `logs/app.log` por defecto. La carpeta `logs/` se crea automáticamente al arrancar. La rotación conserva hasta cinco respaldos, de `app.log.1` a `app.log.5`, con la configuración predeterminada.
 
-En M6 queda pendiente definir cómo rotar el archivo con Gunicorn. Si varios workers comparten el archivo, cada proceso puede intentar rotarlo por su cuenta. Una opción es usar un solo worker con hilos.
+En Docker, Gunicorn usa un solo worker con cuatro hilos, de modo que un único proceso escribe y rota `logs/app.log`. Si se aumentan los workers, varios procesos podrían intentar rotar el archivo a la vez; en ese caso convendría escribir los logs solo a `stderr` y dejarlos al gestor de contenedores.
