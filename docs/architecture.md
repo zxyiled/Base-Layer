@@ -31,11 +31,11 @@
 | `app/services/stats_service.py` | Devuelve los agregados de `prediction_repository.stats()`. |
 | `app/services/model_info_service.py` | Expone arquitectura, clases, preprocesamiento, entrenamiento y métricas; registra la versión activa del artefacto. |
 | `app/services/log_service.py` | Devuelve las últimas entradas del log mediante `read_last_entries()`. |
-| `app/core/errors.py` | Errores de dominio con un `code` (`validation_error`, `unsupported_source`, `invalid_image`, `not_found`, `model_unavailable`) que la API traducirá a HTTP en M5. |
+| `app/core/errors.py` | Errores de dominio con un `code` (`validation_error`, `unsupported_source`, `invalid_image`, `not_found`, `model_unavailable`) que la API traduce a HTTP. |
 
 Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes, source, original_filename)`; el servicio comprueba la fuente contra `SOURCES`, decodifica con `Image.open`/`load` (nunca confía en la extensión ni en el `Content-Type`), llama a `predictor.predict()`, mide `inference_ms`, crea la fila con `file_size_bytes = len(image_bytes)` y devuelve `Prediction.as_dict()`. Los servicios no acceden a la base de datos: usan los repositorios.
 
-`ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se hará en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
+`ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se resuelve en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
 
 ## API REST
 
@@ -105,4 +105,15 @@ Las estadísticas se dibujan con Chart.js a partir de `GET /api/v1/stats`, con t
 
 `read_last_entries()` devuelve hasta 100 entradas por defecto, con un máximo de 500. Empieza con una ventana de `limit × 4` líneas al final del archivo y la cuadruplica hasta reunir las entradas solicitadas, abarcar el archivo o llegar al tope de 100 000 líneas. Así puede recuperar la cabecera de un traceback largo. Si la ventana empieza a mitad de una entrada, descarta el fragmento inicial. Solo puede devolver `timestamp`, `level` y `logger` en `null` cuando lee el archivo completo y este empieza con líneas sin el formato de log.
 
-El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el archivo no existe o el límite es cero o negativo. La integración con el servicio de M4 y la API de M5 queda pendiente.
+El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el archivo no existe o el límite es cero o negativo. El servicio `LogService` de M4 expone estas entradas y `GET /api/v1/logs` las sirve en M5.
+
+## Entrega (M8)
+
+| Archivo | Contenido |
+| --- | --- |
+| `README.md` | Instalación con `uv`, datos, base de datos, Docker, interfaz y licencias. |
+| `LICENSE` | Licencia MIT del código del proyecto (Equipo del proyecto · 2026). |
+| `docs/` | Arquitectura, dataset, informe del modelo, API, despliegue y estado de los módulos. |
+| `docs/presentacion/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
+
+Las diapositivas usan un escenario fijo de 1920 × 1080 escalado a la ventana, sin dependencias externas salvo las tipografías opcionales de Google Fonts. No introducen datos nuevos: la prueba con fotos reales permanece pendiente.
