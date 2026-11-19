@@ -9,10 +9,10 @@ from alembic import context
 # access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-# Keep the application's loggers active when migrations run in-process.
-fileConfig(config.config_file_name, disable_existing_loggers=False)
+# Use alembic.ini logging only when the app has not configured logging yet;
+# otherwise keep the app handlers (console + logs/app.log) for migration output.
+if not logging.getLogger().handlers:
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 logger = logging.getLogger('alembic.env')
 
 

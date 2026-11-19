@@ -1,10 +1,13 @@
 """Application configuration read from environment variables."""
 
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
 
 
 def normalize_database_url(url: str) -> str:
@@ -36,3 +39,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    LOG_FILE = os.getenv("LOG_FILE", str(ROOT_DIR / "logs" / "app.log"))
+    LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", "1000000"))
+    LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", "5"))
