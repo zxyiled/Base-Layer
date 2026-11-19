@@ -24,7 +24,7 @@ El módulo de ML clasifica ocho frutas con MobileNetV3-Small en CPU. Incluye la 
 
 ## Base de datos
 
-La aplicación guarda las predicciones y los registros en PostgreSQL mediante Flask-SQLAlchemy.
+El esquema de PostgreSQL incluye tablas para predicciones, versiones del modelo y registros.
 
 1. Copia `.env.example` a `.env` y ajusta `DATABASE_URL` con la conexión de tu PostgreSQL.
 
@@ -32,13 +32,20 @@ La aplicación guarda las predicciones y los registros en PostgreSQL mediante Fl
    cp .env.example .env
    ```
 
-2. Crea las tablas.
+2. Con PostgreSQL en ejecución, aplica las migraciones y comprueba el esquema. La primera revisión parte de un esquema vacío.
 
    ```sh
-   uv run flask --app wsgi init-db
+   uv run flask --app wsgi db upgrade
+   uv run flask --app wsgi db check
    ```
 
-   El comando usa `db.create_all()`. No hay migraciones versionadas: si cambia el esquema, recrea las tablas o migra los datos a mano.
+3. Si cambias los modelos, genera una migración y revisa el archivo en `migrations/versions/`. Luego ejecuta `db upgrade` y `db check` como en el paso anterior.
+
+   ```sh
+   uv run flask --app wsgi db migrate -m "describe el cambio"
+   ```
+
+Si ya tienes tablas del M2 original, consulta la nota sobre la revisión inicial. [Despliegue](docs/deployment.md#base-de-datos)
 
 ## Documentación
 

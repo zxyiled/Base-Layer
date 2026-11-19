@@ -88,3 +88,50 @@ def test_stats_aggregates_counts_and_confidence(app):
 def test_stats_on_empty_table(app):
     stats = prediction_repository.stats()
     assert stats == {"total": 0, "mean_confidence": None, "by_label": [], "by_source": []}
+
+
+def test_create_stores_file_size_and_inference_time(app):
+    created = prediction_repository.create(
+        source="video",
+        predicted_label="uva",
+        confidence=0.8,
+        top3=TOP3,
+        original_filename="frame.jpg",
+        file_size_bytes=20480,
+        inference_ms=12.5,
+    )
+    data = prediction_repository.get_by_id(created.id).as_dict()
+    assert data["file_size_bytes"] == 20480
+    assert data["inference_ms"] == 12.5
+
+
+def test_as_dict_serializes_created_at_in_utc(app):
+    created_at = _create().as_dict()["created_at"]
+    assert created_at.endswith("+00:00")
+
+
+def test_list_filters_by_date_range(app):
+    from datetime import datetime, timedelta, timezone
+
+    from app.extensions import db
+
+    base = datetime(2026, 11, 1, tzinfo=timezone.utc)
+    for days in (0, 1, 2):
+        prediction = _create()
+        prediction.created_at = base + timedelta(days=days)
+    db.session.commit()
+
+    window = prediction_repository.list_paginated(date_from=base + timedelta(days=1), date_to=base + timedelta(days=2))
+    assert window["total"] == 1
+    assert prediction_repository.list_paginated(date_from=base + timedelta(days=1))["total"] == 2
+    assert prediction_repository.list_paginated(date_to=base + timedelta(days=1))["total"] == 1
+
+
+def test_confidence_out_of_range_is_rejected(app):
+    from sqlalchemy.exc import IntegrityError
+
+    from app.extensions import db
+
+    with pytest.raises(IntegrityError):
+        _create(confidence=1.5)
+    db.session.rollback()

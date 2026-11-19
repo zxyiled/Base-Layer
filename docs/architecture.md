@@ -24,16 +24,21 @@
 
 | Componente | Responsabilidad |
 | --- | --- |
-| `app/config.py` | Lee `DATABASE_URL`, `SECRET_KEY` y `LOG_LEVEL` desde el entorno (`.env`) y convierte las URL `postgresql://` al dialecto `postgresql+psycopg://` de psycopg 3. |
-| `app/extensions.py` | Expone la instancia compartida `db = SQLAlchemy()`. |
+| `app/config.py` | Lee `DATABASE_URL`, `SECRET_KEY` y `LOG_LEVEL` desde el entorno (`.env`) y convierte las URL `postgresql://` y `postgres://` al dialecto `postgresql+psycopg://` de psycopg 3. |
+| `app/extensions.py` | Expone las instancias compartidas `db = SQLAlchemy()` y `migrate = Migrate()`. |
 | `app/models/` | Declara `Prediction`, `ModelVersion` y `AppLog` con sus restricciones, índices y relaciones. |
-| `app/repositories/` | Única capa que consulta la base de datos: alta, búsqueda, listados paginados y agregados con SQLAlchemy. |
-| `app/__init__.py` | `create_app()` configura la aplicación, inicializa `db` y registra el comando `flask --app wsgi init-db`. |
+| `app/repositories/` | Centraliza las altas, búsquedas, consultas paginadas y agregados con SQLAlchemy. |
+| `app/__init__.py` | `create_app()` configura la aplicación, inicializa `db` y `migrate`, y registra los modelos. |
+| `migrations/` | La revisión inicial `6bfedced69da` crea las tres tablas, sus restricciones y sus índices. Alembic usa `db.engine` y mantiene habilitados los loggers existentes. |
 
-Las rutas y los servicios no acceden a la base de datos directamente: llaman a un repositorio. Las tablas se crean con `init-db` mediante `db.create_all()`; no hay migraciones versionadas, así que un cambio de esquema requiere recrear las tablas. Las consultas paginadas devuelven `items`, `total`, `page`, `per_page` y `pages`, con un máximo de 100 elementos por página.
+`uv run flask --app wsgi db upgrade` aplica las migraciones versionadas con Flask-Migrate y Alembic. Las pruebas de repositorios preparan su SQLite temporal con `db.create_all()` y una prueba aparte aplica la migración y compara el esquema con los modelos.
 
 | Tabla | Campos principales |
 | --- | --- |
 | `model_versions` | `name` único, `architecture`, `artifact_path`, `labels` (JSON), `is_active`, `created_at`. |
-| `predictions` | `source` (`camera`, `upload` o `video`), `original_filename`, `predicted_label`, `confidence`, `top3` (JSON), `model_version_id`, `created_at`. |
+| `predictions` | `source` (`camera`, `upload` o `video`), `original_filename`, `file_size_bytes` (entero opcional), `predicted_label`, `confidence` (entre 0 y 1, inclusive), `top3` (JSON), `inference_ms` (flotante opcional, en milisegundos), `model_version_id` (FK opcional con `ON DELETE SET NULL`), `created_at`. |
 | `app_logs` | `level`, `logger`, `message`, `context` (JSON), `created_at`. |
+
+`prediction_repository.create()` acepta el tamaño del archivo en bytes y el tiempo de inferencia. `Prediction.as_dict()` incluye ambos campos. La imagen queda fuera de la base de datos. La restricción `ck_predictions_confidence` aplica el rango de confianza en la base. Los tres modelos serializan `created_at` en ISO 8601 con `+00:00` y tratan las fechas sin zona de SQLite como UTC.
+
+`prediction_repository.list_paginated()` combina filtros opcionales por `label`, `source` y `created_at`. Los límites de fecha se pasan en UTC como `date_from` (inclusivo) y `date_to` (exclusivo). Las consultas paginadas devuelven `items`, `total`, `page`, `per_page` y `pages`, con un máximo de 100 elementos por página.

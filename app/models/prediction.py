@@ -3,7 +3,7 @@
 from typing import Any
 
 from app.extensions import db
-from app.models.model_version import utcnow
+from app.models.model_version import to_utc_iso, utcnow
 
 SOURCES = ("camera", "upload", "video")
 
@@ -17,6 +17,7 @@ class Prediction(db.Model):
             "source IN ('camera', 'upload', 'video')",
             name="ck_predictions_source",
         ),
+        db.CheckConstraint("confidence >= 0 AND confidence <= 1", name="ck_predictions_confidence"),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -27,9 +28,11 @@ class Prediction(db.Model):
     )
     source = db.Column(db.String(16), nullable=False, index=True)
     original_filename = db.Column(db.String(255))
+    file_size_bytes = db.Column(db.Integer)
     predicted_label = db.Column(db.String(64), nullable=False, index=True)
     confidence = db.Column(db.Float, nullable=False)
     top3 = db.Column(db.JSON, nullable=False)
+    inference_ms = db.Column(db.Float)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
 
     model_version = db.relationship("ModelVersion", back_populates="predictions")
@@ -44,8 +47,10 @@ class Prediction(db.Model):
             "model_version_id": self.model_version_id,
             "source": self.source,
             "original_filename": self.original_filename,
+            "file_size_bytes": self.file_size_bytes,
             "label": self.predicted_label,
             "confidence": self.confidence,
             "top3": self.top3,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "inference_ms": self.inference_ms,
+            "created_at": to_utc_iso(self.created_at),
         }

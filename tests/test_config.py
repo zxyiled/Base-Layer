@@ -25,4 +25,4 @@ def test_create_app_requires_database_url():
 def test_create_app_accepts_overrides(tmp_path):
     app = create_app({"SQLALCHEMY_DATABASE_URI": f"sqlite:///{tmp_path / 'app.db'}", "TESTING": True})
     assert app.config["TESTING"] is True
-    assert "init-db" in app.cli.commands
+    assert "db" in app.cli.commands  # Flask-Migrate: flask db upgrade
