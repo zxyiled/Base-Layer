@@ -49,6 +49,26 @@ Si ya tienes tablas del M2 original, consulta la nota sobre la revisión inicial
 
 La aplicación escribe sus logs en la consola y en `logs/app.log` por defecto. La carpeta `logs/` se crea automáticamente al arrancar. [Configuración de logs](docs/deployment.md#logs-de-aplicación)
 
+## Docker (app + PostgreSQL)
+
+1. Crea el `.env` desde el ejemplo y ajusta las credenciales.
+
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Construye y levanta la aplicación y la base de datos.
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+   `entrypoint.sh` aplica las migraciones y arranca Gunicorn en `http://localhost:8000`. La API vive bajo `/api/v1` (por ejemplo, `GET /api/v1/health`). La cámara del navegador requiere `localhost` o HTTPS.
+
+3. Para detener el entorno: `docker compose down` (añade `-v` para borrar también el volumen de la base de datos).
+
+[Más detalles de despliegue](docs/deployment.md#docker)
+
 ## Documentación
 
 - [Dataset, clases y partición](docs/dataset.md)
