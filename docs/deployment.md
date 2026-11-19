@@ -8,6 +8,7 @@ La aplicación usa PostgreSQL y Flask-SQLAlchemy. Configura la conexión mediant
 | --- | --- |
 | `DATABASE_URL` | URL de conexión. Las variantes `postgresql://` y `postgres://` se convierten a `postgresql+psycopg://` para usar psycopg 3. |
 | `SECRET_KEY` | Clave de Flask. |
+| `MAX_CONTENT_LENGTH` | Tamaño máximo de una subida en bytes (`10485760`, 10 MB, por defecto). |
 | `MODEL_ARTIFACTS_DIR` | Carpeta alternativa del artefacto (`app/ml/artifacts/` por defecto). |
 | `MODEL_METRICS_FILE` | Reporte de métricas para la información del modelo (`ml_training/reports/metrics.json` por defecto). |
 | `LOG_LEVEL` | Nivel de registro (`INFO` por defecto). |
