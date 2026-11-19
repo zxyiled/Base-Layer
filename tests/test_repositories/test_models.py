@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
-from app.models import AppLog, ModelVersion, Prediction
+from app.models import ModelVersion, Prediction
 
 
 def test_model_version_defaults_and_labels(app):
@@ -56,13 +56,3 @@ def test_prediction_rejects_unknown_source(app):
         db.session.commit()
     db.session.rollback()
 
-
-def test_app_log_persists_context(app):
-    app_log = AppLog(level="INFO", logger="app.test", message="hola", context={"key": 1})
-    db.session.add(app_log)
-    db.session.commit()
-
-    stored = db.session.get(AppLog, app_log.id)
-    assert stored.context == {"key": 1}
-    assert stored.created_at is not None
-    assert stored.as_dict()["message"] == "hola"

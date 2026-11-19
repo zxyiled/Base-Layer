@@ -5,6 +5,7 @@ from typing import Any
 from flask import Flask
 
 from app.config import Config
+from app.core.logging_config import configure_logging
 from app.extensions import db, migrate
 
 
@@ -18,6 +19,13 @@ def create_app(overrides: dict[str, Any] | None = None) -> Flask:
     app.config.from_object(Config)
     if overrides:
         app.config.update(overrides)
+
+    configure_logging(
+        app.config["LOG_FILE"],
+        level=app.config["LOG_LEVEL"],
+        max_bytes=app.config["LOG_MAX_BYTES"],
+        backup_count=app.config["LOG_BACKUP_COUNT"],
+    )
 
     if not app.config.get("SQLALCHEMY_DATABASE_URI"):
         raise RuntimeError("DATABASE_URL is not set. Copy .env.example to .env and configure it.")
