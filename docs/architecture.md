@@ -55,6 +55,22 @@ Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes
 
 La API no accede a la base de datos ni al modelo directamente: usa `PredictionService`, `HistoryService`, `StatsService`, `ModelInfoService` y `LogService`. El `model_version_id` se resuelve en la primera predicción con `ModelInfoService.ensure_active_version()` y se guarda en `app.extensions` para reutilizarlo. `docs/api.md` es el contrato que consume el frontend.
 
+## Interfaz web (M7)
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `app/web/__init__.py` | Define el blueprint `web` e importa las vistas. |
+| `app/web/routes.py` | `GET /` renderiza la plantilla única de la interfaz. |
+| `app/templates/index.html` | Estructura Jinja: cámara, subida, video, resultado, historial, estadísticas, modelo y registros. |
+| `app/static/css/styles.css` | Tokens de diseño, tema claro/oscuro, diseño responsive y `prefers-reduced-motion`. |
+| `app/static/js/app.js` | Llamadas `fetch` a la API, captura de cámara, muestreo de video y gráficas con Chart.js. |
+
+`create_app()` registra este blueprint junto al de la API. La ruta web solo sirve HTML: **no llama a servicios ni a la base de datos**. El navegador consume los siete endpoints bajo `/api/v1` con `fetch` y muestra el sobre de error en un resumen accesible y enfocable. Las imágenes nunca se registran en logs.
+
+La vista previa usa `getUserMedia`. La captura dibuja el fotograma en un `canvas` y envía un JPEG al `POST /api/v1/predictions` con `source=camera` (o `video`). El modo continuo repite la captura cada 1,5 s con inicio y detención explícitos, y omite envíos mientras hay una petición en curso. El análisis de video selecciona hasta ocho fotogramas en el navegador, los envía como imágenes con `source=video` y agrega la etiqueta mayoritaria en la interfaz; el backend no procesa video. Si no hay cámara, hay permiso denegado o el contexto no es seguro, se muestra un mensaje en español y se ofrece la subida de archivos.
+
+Las estadísticas se dibujan con Chart.js a partir de `GET /api/v1/stats`, con tablas de datos equivalentes y una paleta que no depende solo del color. El estado de salud, la información del modelo y los registros se cargan al abrir la página y se pueden actualizar de forma independiente.
+
 ## Persistencia
 
 | Componente | Responsabilidad |
