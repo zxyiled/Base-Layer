@@ -88,6 +88,7 @@ def test_create_prediction_rejects_an_oversized_file(app, client, image_bytes):
     app.config["MAX_CONTENT_LENGTH"] = 100
     response = post_image(client, image_bytes)
     assert_error(response, 413, "payload_too_large")
+    assert response.get_json()["error"]["message"] == "El archivo supera el tamaño máximo permitido."
 
 
 def test_create_prediction_fails_when_the_model_is_missing(app, client, image_bytes):
