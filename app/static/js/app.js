@@ -294,16 +294,8 @@ function stopCamera() {
   updateActionButtons();
 }
 
-function canvasToBlob(canvas, type, quality) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new ApiError("No se pudo capturar la imagen.", "capture_error"));
-    }, type, quality);
-  });
-}
-
-function drawToCanvas(video, maxWidth) {
+/** Único muestreador de fotogramas: dibuja un <video> en el canvas y devuelve un blob. */
+function sampleFrame(video, maxWidth, type = "image/jpeg", quality = 0.9) {
   const canvas = el("frame-canvas");
   const sourceWidth = video.videoWidth || 640;
   const sourceHeight = video.videoHeight || 480;
@@ -312,7 +304,12 @@ function drawToCanvas(video, maxWidth) {
   canvas.width = width;
   canvas.height = height;
   canvas.getContext("2d").drawImage(video, 0, 0, width, height);
-  return canvas;
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new ApiError("No se pudo capturar la imagen.", "capture_error"));
+    }, type, quality);
+  });
 }
 
 async function captureCameraFrame() {
@@ -320,7 +317,7 @@ async function captureCameraFrame() {
   if (!state.stream || video.readyState < 2 || !video.videoWidth) {
     throw new ApiError("La cámara todavía no está lista. Espera un momento e inténtalo de nuevo.", "camera_not_ready");
   }
-  return canvasToBlob(drawToCanvas(video, 1280), "image/jpeg", 0.9);
+  return sampleFrame(video, 1280, "image/jpeg", 0.9);
 }
 
 function startContinuous() {
@@ -425,11 +422,6 @@ function seekVideo(video, time) {
   });
 }
 
-async function captureVideoFrame(video) {
-  const canvas = drawToCanvas(video, 640);
-  return canvasToBlob(canvas, "image/jpeg", 0.85);
-}
-
 function aggregateResults(results) {
   const counts = new Map();
   results.forEach((item) => {
@@ -466,7 +458,7 @@ async function analyzeVideo() {
       if (token !== state.videoToken) return;
       setStatus("video-status", `Analizando fotograma ${index + 1} de ${frameCount}…`);
       await seekVideo(video, step * index + step / 2);
-      const frame = await captureVideoFrame(video);
+      const frame = await sampleFrame(video, 640, "image/jpeg", 0.85);
       const prediction = await apiPostImage(frame, "video", `fotograma-${index + 1}.jpg`);
       results.push(prediction);
       renderPrediction(prediction, `Fotograma ${index + 1} de ${frameCount}.`);
