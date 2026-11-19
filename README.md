@@ -24,7 +24,7 @@ El módulo de ML clasifica ocho frutas con MobileNetV3-Small en CPU. Incluye la 
 
 ## Base de datos
 
-El esquema de PostgreSQL incluye tablas para predicciones, versiones del modelo y registros.
+El esquema de PostgreSQL incluye tablas para predicciones y versiones del modelo.
 
 1. Copia `.env.example` a `.env` y ajusta `DATABASE_URL` con la conexión de tu PostgreSQL.
 
@@ -46,6 +46,8 @@ El esquema de PostgreSQL incluye tablas para predicciones, versiones del modelo 
    ```
 
 Si ya tienes tablas del M2 original, consulta la nota sobre la revisión inicial. [Despliegue](docs/deployment.md#base-de-datos)
+
+La aplicación escribe sus logs en la consola y en `logs/app.log` por defecto. La carpeta `logs/` se crea automáticamente al arrancar. [Configuración de logs](docs/deployment.md#logs-de-aplicación)
 
 ## Documentación
 
