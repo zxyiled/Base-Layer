@@ -22,6 +22,24 @@ El módulo de ML clasifica ocho frutas con MobileNetV3-Small en CPU. Incluye la 
 
    Los scripts guardan el manifiesto en `data/processed/`, el modelo en `app/ml/artifacts/` y las métricas y gráficas en `ml_training/reports/`. Para incluir la prueba real, coloca fotos propias en `data/real_test/<clase>/` y vuelve a ejecutar la evaluación. Sin fotos, esa prueba figura como pendiente.
 
+## Base de datos
+
+La aplicación guarda las predicciones y los registros en PostgreSQL mediante Flask-SQLAlchemy.
+
+1. Copia `.env.example` a `.env` y ajusta `DATABASE_URL` con la conexión de tu PostgreSQL.
+
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Crea las tablas.
+
+   ```sh
+   uv run flask --app wsgi init-db
+   ```
+
+   El comando usa `db.create_all()`. No hay migraciones versionadas: si cambia el esquema, recrea las tablas o migra los datos a mano.
+
 ## Documentación
 
 - [Dataset, clases y partición](docs/dataset.md)
