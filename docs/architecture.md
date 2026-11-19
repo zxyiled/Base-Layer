@@ -20,6 +20,23 @@
 
 `Predictor.from_artifacts()` carga los archivos una vez por instancia. Luego `predict(image)` aplica el preprocesamiento compartido, convierte las salidas del modelo a probabilidades con *softmax* y devuelve `{label, confidence, top3}`. Cada entrada de `top3` tiene `label` y `confidence`, en orden descendente de confianza. La implementación de las transformaciones vive en `preprocessing.py` y el JSON registra sus parámetros.
 
+`create_app()` crea el `Predictor` una sola vez y lo deja en `app.extensions["predictor"]`; también guarda la carpeta del artefacto en `app.extensions["model_artifacts_dir"]`. Si faltan los archivos, registra una advertencia y deja el predictor en `None` para que la app arranque igual.
+
+## Servicios
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `app/services/prediction_service.py` | Valida `source`, decodifica los bytes con Pillow, mide el tiempo de inferencia, guarda la predicción por el repositorio y loguea los metadatos. |
+| `app/services/history_service.py` | Lista paginada con filtros y detalle de una predicción; lanza `NotFoundError` si el id no existe. |
+| `app/services/stats_service.py` | Devuelve los agregados de `prediction_repository.stats()`. |
+| `app/services/model_info_service.py` | Expone arquitectura, clases, preprocesamiento, entrenamiento y métricas; registra la versión activa del artefacto. |
+| `app/services/log_service.py` | Devuelve las últimas entradas del log mediante `read_last_entries()`. |
+| `app/core/errors.py` | Errores de dominio con un `code` (`validation_error`, `unsupported_source`, `invalid_image`, `not_found`, `model_unavailable`) que la API traducirá a HTTP en M5. |
+
+Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes, source, original_filename)`; el servicio comprueba la fuente contra `SOURCES`, decodifica con `Image.open`/`load` (nunca confía en la extensión ni en el `Content-Type`), llama a `predictor.predict()`, mide `inference_ms`, crea la fila con `file_size_bytes = len(image_bytes)` y devuelve `Prediction.as_dict()`. Los servicios no acceden a la base de datos: usan los repositorios.
+
+`ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se hará en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
+
 ## Persistencia
 
 | Componente | Responsabilidad |

@@ -34,6 +34,31 @@ def get_by_id(model_version_id: int) -> ModelVersion | None:
     return db.session.get(ModelVersion, model_version_id)
 
 
+def get_by_name(name: str) -> ModelVersion | None:
+    """Return one model version by its unique name, if any."""
+    statement = db.select(ModelVersion).where(ModelVersion.name == name)
+    return db.session.scalar(statement)
+
+
+def get_or_create_active(
+    name: str,
+    architecture: str,
+    labels: list[str],
+    artifact_path: str | None = None,
+) -> ModelVersion:
+    """Return the model version ``name``, creating or activating it if needed."""
+    existing = get_by_name(name)
+    if existing is not None:
+        return existing if existing.is_active else activate(existing.id)
+    return create(
+        name=name,
+        architecture=architecture,
+        labels=labels,
+        artifact_path=artifact_path,
+        is_active=True,
+    )
+
+
 def get_active() -> ModelVersion | None:
     """Return the active model version, if any."""
     statement = (
