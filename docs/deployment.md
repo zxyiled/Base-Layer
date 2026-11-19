@@ -77,20 +77,20 @@ Aplica la revisión con `db upgrade` y comprueba con `db check` si quedan difere
 
 `docker compose down -v` elimina además el volumen `db_data` con las predicciones.
 
-Detalles de la imagen:
+La imagen de la aplicación pasó de **5,7 GB a 1,72 GB** en la verificación de la corrección de M6.
 
 | Aspecto | Implementación |
 | --- | --- |
 | Base | `python:3.12.11-slim-bookworm` con `uv` `0.12.13` (versiones fijas). |
-| Dependencias | `uv sync --locked --no-dev` con PyTorch CPU desde el índice de `pyproject.toml`. |
+| Dependencias en Docker | `uv sync --locked --no-default-groups --no-install-project` instala solo las dependencias de ejecución, incluido PyTorch CPU. `UV_NO_CACHE=1` evita que la caché de `uv` quede en una capa. |
+| Dependencias locales | `uv sync` y `uv run` incluyen por defecto los grupos `dev` (pruebas) y `train` (entrenamiento y evaluación, con scikit-learn y matplotlib). Docker excluye ambos. |
 | Copia | Selectiva: `app/`, `migrations/`, `ml_training/reports/metrics.json`, `wsgi.py`, `entrypoint.sh`, `README.md`, `pyproject.toml` y `uv.lock`. El dataset y `.env` nunca entran en la imagen. |
-| Usuario | `appuser` (uid 1000), sin root. `logs/` se crea dentro de `/app`. |
-| Servidor | Gunicorn con **un worker y cuatro hilos** en el puerto `8000`; así se evita que varios procesos roten el mismo log y se carga el modelo una sola vez. |
+| Permisos | El código en `/app` pertenece a `root` y `appuser` (uid 1000) solo puede leerlo. Dentro de `/app`, solo `/app/logs` pertenece a `appuser` y permite escritura. |
+| Servidor | Gunicorn escucha en el puerto `8000` con **un worker y cuatro hilos**. Antes de aumentar los workers, revisa `RotatingFileHandler` y el registro diferido de la versión del modelo, que no son seguros entre varios procesos. |
+| Constructor clásico | `RUN chmod +x entrypoint.sh` marca el script como ejecutable y conserva la compatibilidad con el constructor sin BuildKit. |
 | Migraciones | `entrypoint.sh` ejecuta `flask --app wsgi db upgrade` al arrancar. |
 | Métricas | `ml_training/reports/metrics.json` se copia a la imagen para que `/api/v1/model` las muestre. |
 
 ## Logs de aplicación
 
 La aplicación escribe en `stderr` y en `logs/app.log` por defecto. La carpeta `logs/` se crea automáticamente al arrancar. La rotación conserva hasta cinco respaldos, de `app.log.1` a `app.log.5`, con la configuración predeterminada.
-
-En Docker, Gunicorn usa un solo worker con cuatro hilos, de modo que un único proceso escribe y rota `logs/app.log`. Si se aumentan los workers, varios procesos podrían intentar rotar el archivo a la vez; en ese caso convendría escribir los logs solo a `stderr` y dejarlos al gestor de contenedores.

@@ -10,6 +10,8 @@ El módulo de ML clasifica ocho frutas con MobileNetV3-Small en CPU. Incluye la 
    uv sync
    ```
 
+   En local, `uv sync` incluye los grupos `dev` (pruebas) y `train` (entrenamiento y evaluación). La imagen Docker instala solo las dependencias de ejecución.
+
 2. Crea `data/raw/fruits-360/` y descarga **Fruits-360**, de Mihai Oltean (2017–), versión `2026.10.27.0` de la rama **100x100**, bajo licencia **CC BY-SA 4.0**. Coloca `Training/` y `Test/` directamente dentro de `data/raw/fruits-360/`. Esa carpeta se mantiene fuera del repositorio. Si el dataset ya está en otra ubicación, exporta `DATASET_DIR` con la ruta que contiene ambas carpetas. [Descarga y atribución oficial](https://github.com/fruits-360/fruits-360-100x100)
 
 3. Genera el manifiesto, entrena y evalúa.
