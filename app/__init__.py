@@ -4,6 +4,8 @@ from typing import Any
 
 from flask import Flask
 
+from app.api.v1 import api_v1_bp
+from app.api.v1.errors import register_error_handlers
 from app.config import Config
 from app.core.logging_config import configure_logging
 from app.extensions import db, migrate
@@ -34,6 +36,8 @@ def create_app(overrides: dict[str, Any] | None = None) -> Flask:
 
     db.init_app(app)
     migrate.init_app(app, db)
+    register_error_handlers(app)
+    app.register_blueprint(api_v1_bp)
 
     with app.app_context():
         from app import models  # noqa: F401  (register the models' metadata)
@@ -46,5 +50,6 @@ def create_app(overrides: dict[str, Any] | None = None) -> Flask:
         predictor = None
     app.extensions["predictor"] = predictor
     app.extensions["model_artifacts_dir"] = str(artifacts_dir)
+    app.extensions["model_version_id"] = None
 
     return app

@@ -9,7 +9,7 @@ La rama base de integración es `ML-project`.
 | M2 · Persistencia | Cerrado y fusionado en `ML-project` (PR #8) | Santiago Goez | `modulo-2` |
 | M3 · Logs | Cerrado por el agente. Apertura del PR y fusión en `ML-project` a cargo de una persona. | Agente de backend | `modulo-3-logs` |
 | M4 · Servicios e inferencia | Cerrado por el agente. PR pendiente | Agente de backend | `modulo-4-servicios` |
-| M5 · API | Pendiente | Por registrar | Por registrar |
+| M5 · API | Cerrado por el agente. PR pendiente | Agente de backend | `modulo-5-api` |
 | M6 · Docker | Pendiente | Por registrar | Por registrar |
 | M7 · Frontend | Pendiente | Por registrar | Por registrar |
 | M8 · README, documentación final y diapositivas | Pendiente | Por registrar | Por registrar |
@@ -24,6 +24,8 @@ La verificación de M3 reportó **67 pruebas aprobadas** con `uv run pytest`. Cu
 
 La verificación de M4 reportó **91 pruebas aprobadas** con `uv run pytest` (24 nuevas). Cubren la decodificación con Pillow (bytes vacíos, corruptos y contenido no-imagen), las tres fuentes permitidas, la persistencia de etiqueta, confianza, top-3, tamaño y tiempo de inferencia, el enlace con la versión del modelo, el historial paginado con filtros, el detalle ausente, las estadísticas, la información del modelo con y sin métricas y la lectura del log. También se comprobó el flujo completo con el artefacto real y SQLite (predicción guardada, versión activa y métricas oficiales) y el arranque de la app con `flask --app wsgi routes`. [Pruebas de servicios](../tests/test_services/)
 
+La verificación de M5 reportó **127 pruebas aprobadas** con `uv run pytest` (36 nuevas). Cubren los siete endpoints, los códigos `404`, `413`, `415`, `422`, `503`, el sobre de error, la paginación y los filtros por etiqueta, fuente y fechas, el enlace con la versión del modelo, la salud con la base de datos caída y el contrato de `docs/api.md`. También se probó el flujo completo con el artefacto real y SQLite (predicción `201`, listado, estadísticas, modelo con métricas oficiales, logs y salud) y `flask --app wsgi routes` mostró las siete rutas. [Pruebas de API](../tests/test_api/)
+
 ## Diferencias con el plan
 
 - **Selección del artefacto.** La mayor exactitud de validación eligió la época 3, al final de la etapa de cabeza, cuyo artefacto dio **0,9915** en `Test/`. Después de ver ese resultado, se adoptó la menor pérdida de validación con la exactitud como desempate. Al repetir el entrenamiento con la misma semilla y las mismas métricas por época, el nuevo criterio eligió la época 5, de ajuste fino, con pérdida de validación **0,0096**, exactitud de validación **0,9963** y exactitud oficial **0,9938**. [Informe del modelo](ml-report.md#cambio-del-criterio-de-selección)
@@ -33,4 +35,6 @@ La verificación de M4 reportó **91 pruebas aprobadas** con `uv run pytest` (24
 - **Registros de aplicación (M3).** Los logs se escriben solo en consola y en un archivo rotativo, según la decisión aprobada. La migración `7e4b0e45cdaf` elimina la tabla `app_logs`. Su `downgrade` recrea la tabla vacía con los tipos de la revisión inicial. Así se mantiene la escritura de logs durante fallos de la base de datos y se evita la recursión con los logs de SQLAlchemy.
 - **Versión del modelo (M4).** `ModelInfoService.ensure_active_version()` registra el artefacto cargado y reutiliza la versión por nombre. Las predicciones aceptan `model_version_id`, pero la API (M5) es quien lo resuelve y lo pasa al servicio.
 - **Métricas en la imagen (M4/M6).** `ModelInfoService` lee `ml_training/reports/metrics.json` (configurable con `MODEL_METRICS_FILE`). Esa carpeta no se copia a la imagen Docker, así que en M6 habrá que incluir ese archivo o aceptar que `metrics` sea `null` en el contenedor.
+- **Versión del modelo (M5).** La API resuelve la versión activa en la primera predicción y la reutiliza en `app.extensions["model_version_id"]` mientras dura el proceso.
+- **Salud (M5).** `GET /health` responde con un objeto propio (`status`, `database`, `model`), no con el sobre de error, porque es un chequeo de estado y no un error de la API.
 - **Rotación con Gunicorn (M6).** Queda pendiente definir la configuración. Varios workers que comparten el archivo pueden intentar rotarlo al mismo tiempo. Una opción es usar un solo worker con hilos.
