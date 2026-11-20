@@ -41,7 +41,7 @@ La verificación de M7 reportó **134 pruebas aprobadas** con `uv run pytest` (4
 
 El ajuste posterior de M7 sirve Chart.js 4.6.1 desde `app/static/vendor/` (sin CDN) y usa una única utilidad `sampleFrame()` para capturar fotogramas de la cámara y del video. Las tipografías de Google Fonts son opcionales: si no cargan, la interfaz usa las fuentes de respaldo del sistema. [Pruebas web](../tests/test_web/)
 
-El cierre de M8 no cambia código: se revisaron los siete documentos y el README, se añadió `LICENSE` (MIT, «Equipo del proyecto · 2026») y se generaron 20 diapositivas en `docs/presentacion/index.html` con el estilo «Herbario técnico», escenario fijo de 1920 × 1080 y navegación por teclado, rueda y gestos. Todo el contenido de las diapositivas procede de `docs/` y de `ml_training/reports/`; la prueba real sigue marcada como pendiente. La puerta de cierre se verificó con `uv run pytest` (134 pruebas aprobadas) y el diff revisado antes del commit en `modulo-8-entrega`.
+El cierre de M8 no cambia código: se revisaron los siete documentos y el README, se añadió `LICENSE` (MIT, «Juan Cardona, Santiago Góez, Sebastián Mejía · 2026») y se generaron 20 diapositivas en `docs/presentacion/index.html` con el estilo «Herbario técnico», escenario fijo de 1920 × 1080 y navegación por teclado, rueda y gestos. Todo el contenido de las diapositivas procede de `docs/` y de `ml_training/reports/`; la prueba real sigue marcada como pendiente. La puerta de cierre se verificó con `uv run pytest` (134 pruebas aprobadas) y el diff revisado antes del commit en `modulo-8-entrega`.
 
 ## Auditoría final
 
@@ -53,7 +53,6 @@ La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial u
 
 - Tomar unas 10 fotos propias por clase. Las carpetas `data/real_test/<clase>/` ya existen y están vacías. Tras guardar las fotos, ejecutar `uv run python ml_training/evaluate.py` y actualizar el informe del modelo y las diapositivas. [Informe del modelo](ml-report.md) · [Diapositivas](presentacion/index.html)
 - Una persona debe fusionar `ML-project` en `main`, la rama predeterminada del remoto, que aún no contiene esa integración. `.gitignore` se añadió en ambas ramas (`add/add`). `LICENSE` se borró en `main` y sigue presente en `ML-project`. Se debe conservar el `LICENSE` de `ML-project`.
-- Confirmar el nombre definitivo del titular de `LICENSE`, que figura como «Equipo del proyecto».
 
 ## Diferencias con el plan
 
@@ -69,5 +68,5 @@ La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial u
 - **Gunicorn (M6).** Se usa un solo worker con cuatro hilos porque `RotatingFileHandler` y el registro diferido de la versión del modelo requieren revisión antes de usar varios procesos.
 - **Dependencias (corrección de M6).** Se retiraron `pandas` y `requests` por falta de uso. `scikit-learn` y `matplotlib` pasaron al grupo `train`. En local, `uv` incluye `dev` y `train` por defecto. Docker instala solo las dependencias de ejecución.
 - **Copia adicional (M6).** Además de lo previsto, la imagen copia `migrations/` (necesario para `entrypoint.sh`) y `ml_training/reports/metrics.json` (para la información del modelo). El resto del `COPY` sigue siendo selectivo.
-- **Licencias (M8).** El código del proyecto se distribuye bajo MIT (`LICENSE`, «Equipo del proyecto · 2026»). El dataset Fruits-360 conserva su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean; el artefacto entrenado deriva de ese dataset y se entrega con el proyecto.
+- **Licencias (M8).** El código del proyecto se distribuye bajo MIT (`LICENSE`, «Juan Cardona, Santiago Góez, Sebastián Mejía · 2026»). El dataset Fruits-360 conserva su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean; el artefacto entrenado deriva de ese dataset y se entrega con el proyecto.
 - **Diapositivas (M8).** Se añaden fuera del plan original como parte del módulo de entrega: 20 diapositivas de baja densidad en `docs/presentacion/index.html`, generadas solo con resultados ya documentados.

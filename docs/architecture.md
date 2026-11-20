@@ -116,7 +116,7 @@ El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el
 | Archivo | Contenido |
 | --- | --- |
 | `README.md` | Instalación con `uv`, datos, base de datos, Docker, interfaz y licencias. |
-| `LICENSE` | Licencia MIT del código del proyecto (Equipo del proyecto · 2026). |
+| `LICENSE` | Licencia MIT del código del proyecto (Juan Cardona, Santiago Góez, Sebastián Mejía · 2026). |
 | `docs/` | Arquitectura, dataset, informe del modelo, API, despliegue y estado de los módulos. |
 | `docs/presentacion/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
 
