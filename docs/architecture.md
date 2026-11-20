@@ -31,11 +31,11 @@
 | `app/services/stats_service.py` | Devuelve los agregados de `prediction_repository.stats()`. |
 | `app/services/model_info_service.py` | Expone arquitectura, clases, preprocesamiento, entrenamiento y métricas; registra la versión activa del artefacto. |
 | `app/services/log_service.py` | Devuelve las últimas entradas del log mediante `read_last_entries()`. |
-| `app/core/errors.py` | Errores de dominio con un `code` (`validation_error`, `unsupported_source`, `invalid_image`, `not_found`, `model_unavailable`) que la API traducirá a HTTP en M5. |
+| `app/core/errors.py` | Errores de dominio con un `code` (`validation_error`, `unsupported_source`, `invalid_image`, `not_found`, `model_unavailable`) que la API traduce a HTTP. |
 
 Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes, source, original_filename)`; el servicio comprueba la fuente contra `SOURCES`, decodifica con `Image.open`/`load` (nunca confía en la extensión ni en el `Content-Type`), llama a `predictor.predict()`, mide `inference_ms`, crea la fila con `file_size_bytes = len(image_bytes)` y devuelve `Prediction.as_dict()`. Los servicios no acceden a la base de datos: usan los repositorios.
 
-`ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se hará en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
+`ModelInfoService.ensure_active_version()` registra el artefacto cargado con `model_version_repository.get_or_create_active()`. El nombre combina arquitectura, número de clases y la fecha de modificación de `model.pt`, de modo que un reentrenamiento crea otra versión. La vinculación de cada predicción con `model_version_id` se resuelve en la API (M5). Las métricas se leen de `ml_training/reports/metrics.json` (o `MODEL_METRICS_FILE`) y se resumen en accuracy, macro métricas, métricas por clase y matriz de confusión; si el archivo no existe, `metrics` es `null`.
 
 ## API REST
 
@@ -54,6 +54,23 @@ Flujo de una predicción: la ruta llama a `PredictionService.predict(image_bytes
 `create_app()` registra el blueprint y los manejadores de error. Cada ruta solo valida la entrada, llama a un servicio y serializa la respuesta. `POST /predictions` exige `multipart/form-data`, lee `image`, acepta `source` opcional y devuelve `201`. Los formatos aceptados por Pillow son JPEG, PNG y WEBP; un formato válido distinto responde `415` y un archivo corrupto `422`. Flask aplica `MAX_CONTENT_LENGTH` (10 MB por defecto) y responde `413`.
 
 La API no accede a la base de datos ni al modelo directamente: usa `PredictionService`, `HistoryService`, `StatsService`, `ModelInfoService` y `LogService`. El `model_version_id` se resuelve en la primera predicción con `ModelInfoService.ensure_active_version()` y se guarda en `app.extensions` para reutilizarlo. `docs/api.md` es el contrato que consume el frontend.
+
+## Interfaz web (M7)
+
+| Componente | Responsabilidad |
+| --- | --- |
+| `app/web/__init__.py` | Define el blueprint `web` e importa las vistas. |
+| `app/web/routes.py` | `GET /` renderiza la plantilla única de la interfaz. |
+| `app/templates/index.html` | Estructura Jinja: cámara, subida, video, resultado, historial, estadísticas, modelo y registros. |
+| `app/static/css/styles.css` | Tokens de diseño, tema claro/oscuro, diseño responsive y `prefers-reduced-motion`. |
+| `app/static/vendor/chart.umd.min.js` | Chart.js 4.6.1 servido localmente, sin dependencia de CDN. |
+| `app/static/js/app.js` | Llamadas `fetch` a la API, `sampleFrame()` compartido por cámara y video, y gráficas con Chart.js. |
+
+`create_app()` registra este blueprint junto al de la API. La ruta web solo sirve HTML: **no llama a servicios ni a la base de datos**. El navegador consume los siete endpoints bajo `/api/v1` con `fetch` y muestra el sobre de error en un resumen accesible y enfocable. Las imágenes nunca se registran en logs.
+
+La vista previa usa `getUserMedia`. La captura dibuja el fotograma en un `canvas` y envía un JPEG al `POST /api/v1/predictions` con `source=camera` (o `video`). El modo continuo repite la captura cada 1,5 s con inicio y detención explícitos, y omite envíos mientras hay una petición en curso. El análisis de video selecciona hasta ocho fotogramas en el navegador, los envía como imágenes con `source=video` y agrega la etiqueta mayoritaria en la interfaz; el backend no procesa video. Si no hay cámara, hay permiso denegado o el contexto no es seguro, se muestra un mensaje en español y se ofrece la subida de archivos.
+
+Las estadísticas se dibujan con Chart.js a partir de `GET /api/v1/stats`, con tablas de datos equivalentes y una paleta que no depende solo del color. El estado de salud, la información del modelo y los registros se cargan al abrir la página y se pueden actualizar de forma independiente.
 
 ## Persistencia
 
@@ -88,4 +105,15 @@ La API no accede a la base de datos ni al modelo directamente: usa `PredictionSe
 
 `read_last_entries()` devuelve hasta 100 entradas por defecto, con un máximo de 500. Empieza con una ventana de `limit × 4` líneas al final del archivo y la cuadruplica hasta reunir las entradas solicitadas, abarcar el archivo o llegar al tope de 100 000 líneas. Así puede recuperar la cabecera de un traceback largo. Si la ventana empieza a mitad de una entrada, descarta el fragmento inicial. Solo puede devolver `timestamp`, `level` y `logger` en `null` cuando lee el archivo completo y este empieza con líneas sin el formato de log.
 
-El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el archivo no existe o el límite es cero o negativo. La integración con el servicio de M4 y la API de M5 queda pendiente.
+El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el archivo no existe o el límite es cero o negativo. El servicio `LogService` de M4 expone estas entradas y `GET /api/v1/logs` las sirve en M5.
+
+## Entrega (M8)
+
+| Archivo | Contenido |
+| --- | --- |
+| `README.md` | Instalación con `uv`, datos, base de datos, Docker, interfaz y licencias. |
+| `LICENSE` | Licencia MIT del código del proyecto (Equipo del proyecto · 2026). |
+| `docs/` | Arquitectura, dataset, informe del modelo, API, despliegue y estado de los módulos. |
+| `docs/presentacion/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
+
+Las diapositivas usan un escenario fijo de 1920 × 1080 escalado a la ventana, sin dependencias externas salvo las tipografías opcionales de Google Fonts. No introducen datos nuevos: la prueba con fotos reales permanece pendiente.

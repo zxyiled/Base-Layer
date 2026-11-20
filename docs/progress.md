@@ -10,9 +10,9 @@ La rama base de integración es `ML-project`.
 | M3 · Logs | Cerrado y fusionado en `ML-project` (PR #10) | Agente de backend | `modulo-3-logs` |
 | M4 · Servicios e inferencia | Cerrado y fusionado en `ML-project` (PR #11) | Agente de backend | `modulo-4-servicios` |
 | M5 · API | Cerrado y fusionado en `ML-project` (PR #12) | Agente de backend | `modulo-5-api` |
-| M6 · Docker | Versión inicial fusionada en `ML-project` (PR #13). Corrección verificada, pendiente de PR y merge por una persona. | Agente de backend | `modulo-6-docker`, `fix/modulo-6-docker` |
-| M7 · Frontend | Pendiente | Otro compañero (nombre por registrar) | Por registrar |
-| M8 · README, documentación final y diapositivas | Pendiente | Por registrar | Por registrar |
+| M6 · Docker | Cerrado y fusionado en `ML-project` (PR #13 y corrección del PR #15) | Agente de backend | `modulo-6-docker`, `fix/modulo-6-docker` |
+| M7 · Frontend | Cerrado; incluido en la rama `modulo-8-entrega` (pendiente de merge por una persona) | Agente de frontend | `modulo-7-Frontend` |
+| M8 · README, documentación final y diapositivas | Cerrado en la rama `modulo-8-entrega` (pendiente de merge por una persona) | Agente de documentación | `modulo-8-entrega` |
 
 El cierre de M1 reportó **25 pruebas aprobadas** con `uv run pytest`. La cobertura de ML incluye preprocesamiento, partición con datos sintéticos y con el manifiesto versionado, predictor con un artefacto mínimo y evaluación con la prueba real pendiente. [Pruebas de ML](../tests/test_ml/)
 
@@ -37,6 +37,12 @@ La corrección de M6 reportó **130 pruebas aprobadas** con `uv run pytest` (3 n
 | Errores | Imagen corrupta `422`, GIF `415`, subida de 11 MB `413` en español, `404` y `405` de la API en español y `404` fuera de `/api/` en HTML. |
 | Contenedor | uid 1000, `/app/app` de `root` en solo lectura para `appuser`, `/app/logs` escribible por `appuser` y `sklearn` ausente. |
 
+La verificación de M7 reportó **134 pruebas aprobadas** con `uv run pytest` (4 nuevas). Cubren el registro del blueprint web, el HTML en español con cámara, subida, resultado, historial, estadísticas, modelo y registros, y el servicio de los archivos estáticos. `node --check` validó el JavaScript y `flask --app wsgi routes` mostró `web.index` en `/` junto a las siete rutas de la API. La interfaz consume solo `docs/api.md`; no se añadieron endpoints ni se modificó la lógica de negocio. [Pruebas web](../tests/test_web/)
+
+El ajuste posterior de M7 sirve Chart.js 4.6.1 desde `app/static/vendor/` (sin CDN) y usa una única utilidad `sampleFrame()` para capturar fotogramas de la cámara y del video. Las tipografías de Google Fonts son opcionales: si no cargan, la interfaz usa las fuentes de respaldo del sistema. [Pruebas web](../tests/test_web/)
+
+El cierre de M8 no cambia código: se revisaron los siete documentos y el README, se añadió `LICENSE` (MIT, «Equipo del proyecto · 2026») y se generaron 20 diapositivas en `docs/presentacion/index.html` con el estilo «Herbario técnico», escenario fijo de 1920 × 1080 y navegación por teclado, rueda y gestos. Todo el contenido de las diapositivas procede de `docs/` y de `ml_training/reports/`; la prueba real sigue marcada como pendiente. La puerta de cierre se verificó con `uv run pytest` (134 pruebas aprobadas) y el diff revisado antes del commit en `modulo-8-entrega`.
+
 ## Diferencias con el plan
 
 - **Selección del artefacto.** La mayor exactitud de validación eligió la época 3, al final de la etapa de cabeza, cuyo artefacto dio **0,9915** en `Test/`. Después de ver ese resultado, se adoptó la menor pérdida de validación con la exactitud como desempate. Al repetir el entrenamiento con la misma semilla y las mismas métricas por época, el nuevo criterio eligió la época 5, de ajuste fino, con pérdida de validación **0,0096**, exactitud de validación **0,9963** y exactitud oficial **0,9938**. [Informe del modelo](ml-report.md#cambio-del-criterio-de-selección)
@@ -51,3 +57,5 @@ La corrección de M6 reportó **130 pruebas aprobadas** con `uv run pytest` (3 n
 - **Gunicorn (M6).** Se usa un solo worker con cuatro hilos porque `RotatingFileHandler` y el registro diferido de la versión del modelo requieren revisión antes de usar varios procesos.
 - **Dependencias (corrección de M6).** Se retiraron `pandas` y `requests` por falta de uso. `scikit-learn` y `matplotlib` pasaron al grupo `train`. En local, `uv` incluye `dev` y `train` por defecto. Docker instala solo las dependencias de ejecución.
 - **Copia adicional (M6).** Además de lo previsto, la imagen copia `migrations/` (necesario para `entrypoint.sh`) y `ml_training/reports/metrics.json` (para la información del modelo). El resto del `COPY` sigue siendo selectivo.
+- **Licencias (M8).** El código del proyecto se distribuye bajo MIT (`LICENSE`, «Equipo del proyecto · 2026»). El dataset Fruits-360 conserva su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean; el artefacto entrenado deriva de ese dataset y se entrega con el proyecto.
+- **Diapositivas (M8).** Se añaden fuera del plan original como parte del módulo de entrega: 20 diapositivas de baja densidad en `docs/presentacion/index.html`, generadas solo con resultados ya documentados.

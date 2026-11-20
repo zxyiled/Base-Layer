@@ -94,3 +94,7 @@ La imagen de la aplicación pasó de **5,7 GB a 1,72 GB** en la verificación de
 ## Logs de aplicación
 
 La aplicación escribe en `stderr` y en `logs/app.log` por defecto. La carpeta `logs/` se crea automáticamente al arrancar. La rotación conserva hasta cinco respaldos, de `app.log.1` a `app.log.5`, con la configuración predeterminada.
+
+## Entrega
+
+La documentación final está en `docs/` y las diapositivas en `docs/presentacion/index.html` (ábrelas directamente en el navegador). El código se distribuye bajo licencia MIT (`LICENSE`); Fruits-360 mantiene su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean.

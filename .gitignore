@@ -47,6 +47,8 @@ build/
 .agents/
 .claude/
 .codex/
+.frontend-slides/
+Skills/
 
 # Sistema y editores
 .DS_Store

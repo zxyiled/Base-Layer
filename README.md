@@ -1,6 +1,6 @@
 # Clasificador de frutas con transfer learning (Fruits-360)
 
-El módulo de ML clasifica ocho frutas con MobileNetV3-Small en CPU. Incluye la preparación del subconjunto, el entrenamiento, la evaluación y un predictor local.
+Aplicación académica que clasifica ocho frutas en imágenes con MobileNetV3-Small en CPU. Incluye la preparación del subconjunto, el entrenamiento y la evaluación; una API REST que guarda cada predicción en PostgreSQL; y una interfaz web para usar la cámara, subir una imagen o analizar un video. El modelo y el preprocesamiento se cargan una sola vez al arrancar.
 
 ## Preparar los datos y reproducir el entrenamiento
 
@@ -71,9 +71,22 @@ La aplicación escribe sus logs en la consola y en `logs/app.log` por defecto. L
 
 [Más detalles de despliegue](docs/deployment.md#docker)
 
+## Interfaz web
+
+Abre `http://localhost:8000/` tras levantar Docker (o `http://127.0.0.1:5000/` con `uv run flask --app wsgi run --debug`). La página sirve una única vista en Jinja que consume los endpoints de `docs/api.md` desde el navegador: clasificación por cámara o archivo, resultado con confianza y top-3, historial paginado, estadísticas con Chart.js servido desde `app/static/vendor/` (sin CDN), información del modelo y registros.
+
+La cámara del navegador requiere `localhost` o HTTPS. Si el permiso se deniega, no hay cámara o el contexto no es seguro, la interfaz lo indica y permite subir una imagen. El modo continuo y el análisis de video funcionan en el navegador: envían fotogramas al mismo endpoint de predicción y no necesitan cambios en el backend. [Arquitectura de la interfaz](docs/architecture.md#interfaz-web-m7)
+
 ## Documentación
 
 - [Dataset, clases y partición](docs/dataset.md)
 - [Entrenamiento y resultados](docs/ml-report.md)
-- [Arquitectura del módulo de ML](docs/architecture.md)
+- [Arquitectura y flujo de una predicción](docs/architecture.md)
+- [Contrato de la API REST](docs/api.md)
+- [Despliegue y variables de entorno](docs/deployment.md)
 - [Estado de los módulos](docs/progress.md)
+- [Diapositivas de la presentación](docs/presentacion/index.html)
+
+## Licencia
+
+El código del proyecto se distribuye bajo licencia MIT; consulta [LICENSE](LICENSE) (titular: Equipo del proyecto · 2026). Fruits-360, de Mihai Oltean, se usa bajo licencia **CC BY-SA 4.0** y conserva su atribución; el artefacto entrenado deriva de ese dataset.
