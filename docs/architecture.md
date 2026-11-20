@@ -68,7 +68,11 @@ La API no accede a la base de datos ni al modelo directamente: usa `PredictionSe
 
 `create_app()` registra este blueprint junto al de la API. La ruta web solo sirve HTML: **no llama a servicios ni a la base de datos**. El navegador consume los siete endpoints bajo `/api/v1` con `fetch` y muestra el sobre de error en un resumen accesible y enfocable. Las imágenes nunca se registran en logs.
 
-La vista previa usa `getUserMedia`. La captura dibuja el fotograma en un `canvas` y envía un JPEG al `POST /api/v1/predictions` con `source=camera` (o `video`). El modo continuo repite la captura cada 1,5 s con inicio y detención explícitos, y omite envíos mientras hay una petición en curso. El análisis de video selecciona hasta ocho fotogramas en el navegador, los envía como imágenes con `source=video` y agrega la etiqueta mayoritaria en la interfaz; el backend no procesa video. Si no hay cámara, hay permiso denegado o el contexto no es seguro, se muestra un mensaje en español y se ofrece la subida de archivos.
+La vista previa usa `getUserMedia` con `facingMode: { ideal: 'environment' }` para dar preferencia a la cámara trasera en móviles. Si el equipo tiene una sola cámara, usa la disponible. Si falta la cámara, se deniega el permiso o el contexto no es seguro, la interfaz muestra un mensaje en español y ofrece la subida de archivos. La captura dibuja el fotograma en un `canvas` y envía un JPEG a `POST /api/v1/predictions` con `source=camera`. El modo continuo tiene controles de inicio y detención. Captura cada 1,5 s, omite envíos mientras hay una petición en curso y se detiene al primer error para evitar alertas repetidas.
+
+El navegador selecciona hasta ocho fotogramas del video y los envía como imágenes con `source=video`. El resumen ordena las clases por su confianza media sobre todos los fotogramas. Si una clase queda fuera del top-3 de un fotograma, su confianza cuenta como cero en ese fotograma. Las tres medias más altas forman el top-3 del resumen. La nota indica en cuántos fotogramas ganó la clase con la media más alta.
+
+El selector «Etiqueta» del historial se llena con las clases de `GET /api/v1/model` para enviar los valores exactos que compara la API. En «Información del modelo», la prueba real muestra «Pendiente» si no hay fotos, la exactitud seguida de «(faltan clases)» si el estado es `incompleta` y la exactitud si es `ok`.
 
 Las estadísticas se dibujan con Chart.js a partir de `GET /api/v1/stats`, con tablas de datos equivalentes y una paleta que no depende solo del color. El estado de salud, la información del modelo y los registros se cargan al abrir la página y se pueden actualizar de forma independiente.
 
@@ -112,7 +116,7 @@ El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el
 | Archivo | Contenido |
 | --- | --- |
 | `README.md` | Instalación con `uv`, datos, base de datos, Docker, interfaz y licencias. |
-| `LICENSE` | Licencia MIT del código del proyecto (Equipo del proyecto · 2026). |
+| `LICENSE` | Licencia MIT del código del proyecto (Juan Cardona, Santiago Góez, Sebastián Mejía · 2026). |
 | `docs/` | Arquitectura, dataset, informe del modelo, API, despliegue y estado de los módulos. |
 | `docs/presentacion/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
 

@@ -264,7 +264,8 @@ async function startCamera() {
     return;
   }
   try {
-    state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+    // Rear camera on phones (the fruit is in front of the user); laptops fall back to their only camera.
+    state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
     const video = el("camera-preview");
     video.srcObject = state.stream;
     await video.play();
@@ -325,10 +326,13 @@ function startContinuous() {
   setStatus("continuous-status", "Modo continuo activo: una predicción cada 1,5 s.");
   state.continuousTimer = window.setInterval(async () => {
     if (document.hidden || state.predictionInFlight) return;
+    // Stop on the first error so the alert is not re-announced every interval.
     try {
       const frame = await captureCameraFrame();
-      await submitFrame(frame, "camera", "continuo.jpg", "Captura del modo continuo.");
+      const prediction = await submitFrame(frame, "camera", "continuo.jpg", "Captura del modo continuo.");
+      if (!prediction) stopContinuous();
     } catch (error) {
+      stopContinuous();
       showError(error.message);
     }
   }, CONTINUOUS_INTERVAL_MS);
@@ -422,19 +426,27 @@ function seekVideo(video, time) {
   });
 }
 
+/**
+ * Average each label's confidence over all frames (0 when it is outside a frame's top 3)
+ * and count how many frames voted for the winner.
+ */
 function aggregateResults(results) {
-  const counts = new Map();
+  const sums = new Map();
   results.forEach((item) => {
-    const entry = counts.get(item.label) || { label: item.label, count: 0, confidenceSum: 0, top3: item.top3 };
-    entry.count += 1;
-    entry.confidenceSum += item.confidence || 0;
-    counts.set(item.label, entry);
+    (item.top3 || []).forEach(({ label, confidence }) => {
+      sums.set(label, (sums.get(label) || 0) + (confidence || 0));
+    });
   });
-  const winner = [...counts.values()].sort((a, b) => b.count - a.count || b.confidenceSum - a.confidenceSum)[0];
+  const top3 = [...sums.entries()]
+    .map(([label, sum]) => ({ label, confidence: sum / results.length }))
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 3);
+  const winner = top3[0];
   return {
     label: winner.label,
-    confidence: winner.confidenceSum / winner.count,
-    top3: winner.top3 || [],
+    confidence: winner.confidence,
+    top3,
+    votes: results.filter((item) => item.label === winner.label).length,
     source: "video",
     created_at: results[results.length - 1].created_at,
   };
@@ -464,7 +476,11 @@ async function analyzeVideo() {
       renderPrediction(prediction, `Fotograma ${index + 1} de ${frameCount}.`);
     }
     if (token !== state.videoToken || results.length === 0) return;
-    renderPrediction(aggregateResults(results), `Resumen de ${results.length} fotogramas del video.`);
+    const summary = aggregateResults(results);
+    renderPrediction(
+      summary,
+      `Resumen de ${results.length} fotogramas: confianza media por clase; «${summary.label}» ganó en ${summary.votes} de ${results.length}.`,
+    );
     await Promise.allSettled([loadHistory(), loadStats()]);
     setStatus("video-status", `Análisis terminado: ${results.length} fotogramas enviados.`);
   } catch (error) {
@@ -613,6 +629,23 @@ async function loadStats() {
 }
 
 /* === MODEL INFO === */
+/** evaluate.py writes status "pendiente" (no photos), "incompleta" (some classes missing) or "ok". */
+function formatRealTest(real) {
+  if (!real) return "—";
+  if (real.status === "pendiente" || !Number.isFinite(real.accuracy)) return "Pendiente";
+  const accuracy = formatConfidence(real.accuracy);
+  return real.status === "incompleta" ? `${accuracy} (faltan clases)` : accuracy;
+}
+
+/** The history filter matches labels exactly, so offer the model's classes instead of free text. */
+function fillLabelFilter(labels) {
+  const select = el("history-label");
+  const current = select.value;
+  const options = [new Option("Todas", "")].concat(labels.map((name) => new Option(name, name)));
+  select.replaceChildren(...options);
+  select.value = labels.includes(current) ? current : "";
+}
+
 function renderModel(data) {
   el("model-empty").hidden = true;
   el("model-content").hidden = false;
@@ -624,10 +657,7 @@ function renderModel(data) {
     ? formatConfidence(official.accuracy)
     : "—";
 
-  const real = data.metrics && data.metrics.real_test;
-  if (!real) el("model-real-test").textContent = "—";
-  else if (real.status === "ok") el("model-real-test").textContent = Number.isFinite(real.accuracy) ? formatConfidence(real.accuracy) : "Completada";
-  else el("model-real-test").textContent = "Pendiente";
+  el("model-real-test").textContent = formatRealTest(data.metrics && data.metrics.real_test);
 
   const chips = el("model-labels");
   chips.replaceChildren();
@@ -637,6 +667,7 @@ function renderModel(data) {
     chip.textContent = name;
     chips.append(chip);
   });
+  fillLabelFilter(data.labels || []);
 
   el("model-details").textContent = JSON.stringify({
     preprocessing: data.preprocessing,
