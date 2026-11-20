@@ -102,4 +102,4 @@ La cámara del navegador requiere `localhost` o HTTPS. Si el permiso se deniega,
 
 ## Licencia
 
-El código del proyecto se distribuye bajo licencia MIT; consulta [LICENSE](LICENSE) (titular: Equipo del proyecto · 2026). Fruits-360, de Mihai Oltean, se usa bajo licencia **CC BY-SA 4.0** y conserva su atribución; el artefacto entrenado deriva de ese dataset.
+El código del proyecto se distribuye bajo licencia MIT; consulta [LICENSE](LICENSE) (titular: Juan Cardona, Santiago Góez, Sebastián Mejía · 2026). Fruits-360, de Mihai Oltean, se usa bajo licencia **CC BY-SA 4.0** y conserva su atribución; el artefacto entrenado deriva de ese dataset.
