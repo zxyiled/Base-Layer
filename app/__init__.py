@@ -10,6 +10,7 @@ from app.config import Config
 from app.core.logging_config import configure_logging
 from app.extensions import db, migrate
 from app.ml.predictor import DEFAULT_ARTIFACTS_DIR, Predictor
+from app.web import web_bp
 
 
 def create_app(overrides: dict[str, Any] | None = None) -> Flask:
@@ -38,6 +39,7 @@ def create_app(overrides: dict[str, Any] | None = None) -> Flask:
     migrate.init_app(app, db)
     register_error_handlers(app)
     app.register_blueprint(api_v1_bp)
+    app.register_blueprint(web_bp)
 
     with app.app_context():
         from app import models  # noqa: F401  (register the models' metadata)
