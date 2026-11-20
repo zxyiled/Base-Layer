@@ -47,6 +47,7 @@ def test_index_renders_the_spanish_interface(client) -> None:
         "Información del modelo",
         "Registros",
         "/static/vendor/chart.umd.min.js",
+        '<select id="history-label">',
     ]
     for fragment in expected_fragments:
         assert fragment in html
@@ -70,6 +71,8 @@ def test_static_assets_are_served(client) -> None:
     assert "function sampleFrame" in source
     assert "drawToCanvas" not in source
     assert "captureVideoFrame" not in source
+    assert "function fillLabelFilter" in source
+    assert "function formatRealTest" in source
 
 
 def test_chart_js_is_served_locally(client) -> None:
