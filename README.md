@@ -22,7 +22,20 @@ Aplicación académica que clasifica ocho frutas en imágenes con MobileNetV3-Sm
    uv run python ml_training/evaluate.py
    ```
 
-   Los scripts guardan el manifiesto en `data/processed/`, el modelo en `app/ml/artifacts/` y las métricas y gráficas en `ml_training/reports/`. Para incluir la prueba real, coloca fotos propias en `data/real_test/<clase>/` y vuelve a ejecutar la evaluación. Sin fotos, esa prueba figura como pendiente.
+   Los scripts guardan el manifiesto en `data/processed/`, el modelo en `app/ml/artifacts/` y las métricas y gráficas en `ml_training/reports/`.
+
+## Prueba real
+
+La prueba real figura como pendiente hasta evaluar las fotos propias.
+
+1. Toma unas 10 fotos por cada una de las ocho clases. Usa varios ejemplares de cada fruta y varía el fondo y la iluminación. Encuadra la fruta entera y centrada para que quede dentro del recorte central del preprocesamiento.
+2. Redimensiona las fotos a unos 1024 px en el lado más largo y guárdalas en JPG, JPEG, PNG, WebP o BMP. Convierte las fotos HEIC a uno de esos formatos.
+3. Guarda en cada carpeta `data/real_test/<clase>/` solo fotos de la fruta que indica su nombre, que se usa como etiqueta. Incluye únicamente las ocho clases del modelo. [Lista de clases](docs/dataset.md#clases-y-balance)
+4. Ejecuta la evaluación.
+
+   ```sh
+   uv run python ml_training/evaluate.py
+   ```
 
 ## Base de datos
 
