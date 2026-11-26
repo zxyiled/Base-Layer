@@ -26,7 +26,9 @@ Aplicación académica que clasifica ocho frutas en imágenes con MobileNetV3-Sm
 
 ## Prueba real
 
-La prueba real figura como pendiente hasta evaluar las fotos propias.
+La prueba real obtuvo **53,7 % de exactitud (29 de 54 imágenes)** y figura como incompleta. El equipo descargó las imágenes de internet y faltan ejemplos de pera y uva. [Resultados y limitaciones](docs/ml-report.md#prueba-real)
+
+Para evaluar fotos propias tomadas con cámara, como preveía el plan, sigue estos pasos.
 
 1. Toma unas 10 fotos por cada una de las ocho clases. Usa varios ejemplares de cada fruta y varía el fondo y la iluminación. Encuadra la fruta entera y centrada para que quede dentro del recorte central del preprocesamiento.
 2. Redimensiona las fotos a unos 1024 px en el lado más largo y guárdalas en JPG, JPEG, PNG, WebP o BMP. Convierte las fotos HEIC a uno de esos formatos.
@@ -98,7 +100,7 @@ La cámara del navegador requiere `localhost` o HTTPS. Si el permiso se deniega,
 - [Contrato de la API REST](docs/api.md)
 - [Despliegue y variables de entorno](docs/deployment.md)
 - [Estado de los módulos](docs/progress.md)
-- [Diapositivas de la presentación](docs/presentacion/index.html)
+- [Diapositivas de la presentación](docs/presentation/index.html)
 
 ## Licencia
 
