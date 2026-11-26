@@ -124,4 +124,4 @@ Eres el agente de **documentación**. No modificas el código de la aplicación 
 - Usa las skills `ui-ux-pro-max` (interfaz) y `frontend-slides` (diapositivas), en `.agents/skills/` si existen en tu entorno. **Antes de usarlas**, verifica que existan su `SKILL.md` y todos los archivos que referencian. Si falta alguno, **avisa cuál y detente**. Si tu herramienta no carga skills, lee el `SKILL.md` y sigue sus instrucciones.
 - Interfaz en Jinja + Chart.js, servida por Flask. Consume la API **solo** según `docs/api.md`; no cambies el backend (si necesitas un cambio, pídelo).
 - Entrypoint `/`: vista previa de la cámara (`getUserMedia`), botón de captura, alternativa de subir archivo, resultado (etiqueta, barra de confianza, top-3), historial, estadísticas, información del modelo y logs. Contempla permiso de cámara denegado o sin cámara. La cámara solo funciona en `localhost` o con HTTPS.
-- Textos de la interfaz en español. Las diapositivas se guardan en `docs/presentacion/`.
+- Textos de la interfaz en español. Las diapositivas se guardan en `docs/presentation/`.
