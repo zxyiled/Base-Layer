@@ -28,6 +28,20 @@ Variedades con menor accuracy:
 - Apple 9: 0.952 (231 imágenes)
 - Pear 1: 0.957 (164 imágenes)
 
-## Prueba real (fotos propias, `data/real_test/`)
+## Prueba real (`data/real_test/`)
 
-**Pendiente.** No hay fotos en data/real_test/<clase>/
+Estado: incompleta. Accuracy: **0.5370** sobre 54 fotos.
+
+| Clase | Precisión | Recall | F1 | Soporte |
+|---|---|---|---|---|
+| banano | 0.889 | 0.800 | 0.842 | 10 |
+| fresa | 0.818 | 0.900 | 0.857 | 10 |
+| limon | 0.000 | 0.000 | 0.000 | 8 |
+| manzana | 0.700 | 0.700 | 0.700 | 10 |
+| naranja | 0.000 | 0.000 | 0.000 | 9 |
+| pera | 0.000 | 0.000 | 0.000 | 0 |
+| tomate | 0.833 | 0.714 | 0.769 | 7 |
+| uva | 0.000 | 0.000 | 0.000 | 0 |
+| **macro** | 0.405 | 0.389 | 0.396 | 54 |
+
+Clases sin fotos: pera, uva.

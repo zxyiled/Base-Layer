@@ -60,4 +60,25 @@ La confusión más frecuente fue pera clasificada como manzana (51 imágenes). T
 
 ## Prueba real
 
-**Pendiente.** Se prevé tomar unas 10 fotos propias por clase y guardarlas en `data/real_test/<clase>/`. El 99,38 % corresponde a imágenes con fondo blanco y rotación controlada. La generalización a fotos propias, con fondos, iluminación y encuadres distintos, queda por medir. El script de evaluación registra la prueba real por separado.
+La prueba real obtuvo **0,5370 (53,7 %), con 29 aciertos en 54 imágenes**. La prueba oficial se mantuvo en **0,9938 (99,38 %)** sobre **17 487 imágenes** de Fruits-360. [Métricas de ambas pruebas](../ml_training/reports/metrics.json)
+
+El equipo descargó las imágenes de `data/real_test/` de internet. Hay imágenes de stock y de otros sitios web, y algunas parecen generadas o retocadas. La evaluación con fotos propias tomadas con cámara, prevista en el plan, queda por medir. [Resumen de evaluación](../ml_training/reports/summary.md)
+
+La prueba quedó **incompleta**. Hay 60 archivos, 10 por cada una de las seis clases presentes. Pera y uva carecen de imágenes. El evaluador solo admite JPG, JPEG, PNG, WebP y BMP, por lo que quedaron fuera seis archivos AVIF (dos de limón, uno de naranja y tres de tomate).
+
+| Clase | Aciertos / evaluadas | Precisión | Recall | F1 | Predicciones erróneas |
+| --- | ---: | ---: | ---: | ---: | --- |
+| banano | 8/10 | 0,889 | 0,800 | 0,842 | 2 como pera |
+| fresa | 9/10 | 0,818 | 0,900 | 0,857 | 1 como manzana |
+| limon | 0/8 | 0,000 | 0,000 | 0,000 | 6 como pera, 1 como manzana y 1 como tomate |
+| manzana | 7/10 | 0,700 | 0,700 | 0,700 | 3 como pera |
+| naranja | 0/9 | 0,000 | 0,000 | 0,000 | 4 como pera, 3 como limón, 1 como banano y 1 como manzana |
+| pera | Sin imágenes | — | — | — | — |
+| tomate | 5/7 | 0,833 | 0,714 | 0,769 | 2 como fresa |
+| uva | Sin imágenes | — | — | — | — |
+
+El resumen automático promedia las ocho clases e incluye pera y uva con ceros. Su precisión, recall y F1 macro son **0,405**, **0,389** y **0,396**. Sobre las seis clases con imágenes evaluadas, los promedios son **0,540**, **0,519** y **0,528**, respectivamente.
+
+La etiqueta «pera» concentró 15 de los 25 errores. Casi todos los limones de la muestra eran verdes (limas), mientras que Fruits-360 contiene limones amarillos de las variedades `Lemon 1` y `Lemon Meyer 1`. Las seis predicciones de limón como pera tuvieron confianzas de 0,91 a 1,00, incluido el único limón amarillo, con 0,91. Las naranjas de la muestra se confundieron principalmente con pera y limón. [Matriz de confusión de la prueba real](../ml_training/reports/confusion_matrix_real.png)
+
+La confianza media fue 0,91 en los aciertos y 0,77 en los errores. Varios errores alcanzaron una confianza de al menos 0,99, por lo que un umbral simple de confianza resulta insuficiente para detectarlos. El cambio de dominio ayuda a explicar la caída de exactitud. Las imágenes web varían en iluminación y fondo, a veces oscuro, y algunas muestran varias frutas. Fruits-360 usa fondo blanco y rotación controlada.

@@ -7,7 +7,7 @@
 | `ml_training/prepare_subset.py` | Agrupa variedades por fruta, separa los fotogramas y escribe el manifiesto y sus metadatos en `data/processed/`. |
 | `ml_training/common.py` | Comparte rutas, semillas y carga de imágenes entre entrenamiento y evaluación. |
 | `ml_training/train.py` | Lee las particiones `train` y `val`, entrena en dos etapas y guarda el mejor artefacto y el historial. |
-| `ml_training/evaluate.py` | Carga el artefacto, evalúa la partición `test` y las fotos propias por separado, y escribe los reportes en `ml_training/reports/`. |
+| `ml_training/evaluate.py` | Carga el artefacto, evalúa por separado la partición `test` y las imágenes de `data/real_test/`, y escribe los reportes en `ml_training/reports/`. |
 
 ## Inferencia local
 
@@ -118,6 +118,6 @@ El lector sustituye los bytes UTF-8 inválidos y devuelve una lista vacía si el
 | `README.md` | Instalación con `uv`, datos, base de datos, Docker, interfaz y licencias. |
 | `LICENSE` | Licencia MIT del código del proyecto (Juan Cardona, Santiago Góez, Sebastián Mejía · 2026). |
 | `docs/` | Arquitectura, dataset, informe del modelo, API, despliegue y estado de los módulos. |
-| `docs/presentacion/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
+| `docs/presentation/index.html` | 20 diapositivas de baja densidad con resultados ya documentados. |
 
 Las diapositivas usan un escenario fijo de 1920 × 1080 escalado a la ventana, sin dependencias externas salvo las tipografías opcionales de Google Fonts. No introducen datos nuevos: la prueba con fotos reales permanece pendiente.
