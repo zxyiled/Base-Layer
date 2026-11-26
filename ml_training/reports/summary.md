@@ -30,18 +30,16 @@ Variedades con menor accuracy:
 
 ## Prueba real (`data/real_test/`)
 
-Estado: incompleta. Accuracy: **0.5370** sobre 54 fotos.
+Estado: ok. Accuracy: **0.5375** sobre 80 fotos.
 
 | Clase | Precisión | Recall | F1 | Soporte |
 |---|---|---|---|---|
-| banano | 0.889 | 0.800 | 0.842 | 10 |
-| fresa | 0.818 | 0.900 | 0.857 | 10 |
-| limon | 0.000 | 0.000 | 0.000 | 8 |
-| manzana | 0.700 | 0.700 | 0.700 | 10 |
-| naranja | 0.000 | 0.000 | 0.000 | 9 |
-| pera | 0.000 | 0.000 | 0.000 | 0 |
-| tomate | 0.833 | 0.714 | 0.769 | 7 |
-| uva | 0.000 | 0.000 | 0.000 | 0 |
-| **macro** | 0.405 | 0.389 | 0.396 | 54 |
-
-Clases sin fotos: pera, uva.
+| banano | 0.727 | 0.800 | 0.762 | 10 |
+| fresa | 0.750 | 0.900 | 0.818 | 10 |
+| limon | 0.000 | 0.000 | 0.000 | 10 |
+| manzana | 0.636 | 0.700 | 0.667 | 10 |
+| naranja | 1.000 | 0.100 | 0.182 | 10 |
+| pera | 0.303 | 1.000 | 0.465 | 10 |
+| tomate | 0.889 | 0.800 | 0.842 | 10 |
+| uva | 0.000 | 0.000 | 0.000 | 10 |
+| **macro** | 0.538 | 0.538 | 0.467 | 80 |

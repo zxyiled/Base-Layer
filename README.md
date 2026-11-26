@@ -26,7 +26,7 @@ Aplicación académica que clasifica ocho frutas en imágenes con MobileNetV3-Sm
 
 ## Prueba real
 
-La prueba real obtuvo **53,7 % de exactitud (29 de 54 imágenes)** y figura como incompleta. El equipo descargó las imágenes de internet y faltan ejemplos de pera y uva. [Resultados y limitaciones](docs/ml-report.md#prueba-real)
+La prueba real obtuvo **53,8 % de exactitud (43 de 80 imágenes)**, con diez imágenes descargadas de internet por cada una de las ocho clases. [Resultados y limitaciones](docs/ml-report.md#prueba-real)
 
 Para evaluar fotos propias tomadas con cámara, como preveía el plan, sigue estos pasos.
 
