@@ -97,4 +97,4 @@ La aplicación escribe en `stderr` y en `logs/app.log` por defecto. La carpeta `
 
 ## Entrega
 
-La documentación final está en `docs/` y las diapositivas en `docs/presentacion/index.html` (ábrelas directamente en el navegador). El código se distribuye bajo licencia MIT (`LICENSE`); Fruits-360 mantiene su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean.
+La documentación final está en `docs/` y puedes abrir `docs/presentation/index.html` directamente en el navegador. El código se distribuye bajo licencia MIT (`LICENSE`). Fruits-360 mantiene su licencia CC BY-SA 4.0 y su atribución a Mihai Oltean.

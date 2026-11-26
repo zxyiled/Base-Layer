@@ -498,7 +498,7 @@
                 <dl class="ledger reveal" style="--d:.45s">
                     <div><dt>Prueba oficial</dt><dd data-editable>99,38 %</dd></div>
                     <div><dt>Imágenes evaluadas</dt><dd data-editable>17 487</dd></div>
-                    <div><dt>Prueba real</dt><dd class="pending" data-editable>Pendiente</dd></div>
+                    <div><dt>Imágenes de internet</dt><dd class="pending" data-editable>53,8 %</dd></div>
                 </dl>
                 <p class="slide-no">01 / 20</p>
             </section>
@@ -713,20 +713,35 @@
             <section class="slide" aria-label="Prueba real">
                 <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
                 <p class="folio">03 · Resultados</p>
-                <h2 class="reveal" data-editable style="--d:.06s">Cambio de dominio</h2>
-                <div class="split" style="margin-top:34px">
-                    <div class="card reveal" style="--d:.16s">
-                        <p class="kicker">Prueba oficial</p>
-                        <h3>99,38 %</h3>
-                        <p>Fondo blanco, rotación controlada y recorte limpio.</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Fuera del laboratorio</h2>
+                <div class="split" style="margin-top:30px">
+                    <div class="stack" style="flex:0 0 560px">
+                        <div class="card reveal" style="--d:.16s">
+                            <p class="kicker">Prueba oficial · Test/</p>
+                            <h3>99,38 %</h3>
+                            <p>Fondo blanco y rotación controlada.</p>
+                        </div>
+                        <div class="card reveal" style="--d:.26s">
+                            <p class="kicker">Imágenes de internet</p>
+                            <h3>53,8 %</h3>
+                            <p>43 de 80 aciertos, 10 por clase. Fondos, luz y encuadres reales.</p>
+                        </div>
                     </div>
-                    <div class="card reveal" style="--d:.26s">
-                        <p class="kicker">Prueba real</p>
-                        <h3>Pendiente</h3>
-                        <p>Fondos, luz y encuadres distintos cambian el problema.</p>
-                    </div>
+                    <table class="data reveal" style="--d:.32s;margin-top:0">
+                        <thead><tr><th>Clase</th><th>Aciertos</th><th>Se confundió con</th></tr></thead>
+                        <tbody>
+                            <tr><td>pera</td><td>10 / 10</td><td>— (recibe 23 errores)</td></tr>
+                            <tr><td>fresa</td><td>9 / 10</td><td>manzana (1)</td></tr>
+                            <tr><td>banano</td><td>8 / 10</td><td>pera (2)</td></tr>
+                            <tr><td>tomate</td><td>8 / 10</td><td>fresa (2)</td></tr>
+                            <tr><td>manzana</td><td>7 / 10</td><td>pera (3)</td></tr>
+                            <tr><td>naranja</td><td>1 / 10</td><td>pera (4), limón (3)</td></tr>
+                            <tr><td>limón</td><td>0 / 10</td><td>pera (8)</td></tr>
+                            <tr><td>uva</td><td>0 / 10</td><td>pera (6), banano (2)</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-                <p class="note reveal" data-editable style="--d:.38s">El plan prevé unas 10 fotos propias por clase en data/real_test/&lt;clase&gt;/. El evaluador ya funciona sin esa carpeta y reporta «pendiente».</p>
+                <p class="note reveal" data-editable style="--d:.42s">Imágenes descargadas de internet, no fotos propias. «Pera» funciona como sumidero: su precisión es 0,30. Los limones verdes salen como pera con 0,99–1,00.</p>
                 <p class="footline">Clasificador de frutas · 19.11.2026</p>
                 <p class="slide-no">13 / 20</p>
             </section>
@@ -814,7 +829,7 @@
                     <li><span>01</span> getUserMedia muestra la vista previa; captura con canvas</li>
                     <li><span>02</span> modo continuo: una predicción cada 1,5 s</li>
                     <li><span>03</span> video: hasta 8 fotogramas enviados como imágenes con source=video</li>
-                    <li><span>04</span> votación mayoritaria y confianza media en el navegador</li>
+                    <li><span>04</span> resumen en el navegador: confianza media por clase sobre todos los fotogramas</li>
                     <li><span>05</span> historial, estadísticas y logs con Chart.js servido localmente</li>
                 </ul>
                 <p class="footline">Clasificador de frutas · 19.11.2026</p>
@@ -852,7 +867,7 @@
                     <li><span>01</span> 99,38 % demuestra que el modelo funciona en el entorno controlado</li>
                     <li><span>02</span> la partición por índice evitó una validación engañosa</li>
                     <li><span>03</span> el cambio de criterio de selección pudo influir en el resultado</li>
-                    <li><span>04</span> falta medir fotos reales antes de hablar de generalización</li>
+                    <li><span>04</span> con imágenes de internet baja a 53,8 %: todavía no generaliza</li>
                 </ul>
                 <span class="stamp reveal" style="--d:.36s">Fin · Preguntas</span>
                 <p class="footline">Clasificador de frutas · 19.11.2026</p>

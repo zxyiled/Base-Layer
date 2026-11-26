@@ -535,8 +535,145 @@
     }
   },
   "real_test": {
-    "status": "pendiente",
-    "reason": "No hay fotos en data/real_test/<clase>/",
-    "ignored_folders": []
+    "status": "ok",
+    "missing_classes": [],
+    "ignored_folders": [],
+    "samples": 80,
+    "accuracy": 0.5375,
+    "macro_precision": 0.5381944444444444,
+    "macro_recall": 0.5375000000000001,
+    "macro_f1": 0.46697412134988636,
+    "per_class": {
+      "banano": {
+        "precision": 0.7272727272727273,
+        "recall": 0.8,
+        "f1": 0.7619047619047619,
+        "support": 10
+      },
+      "fresa": {
+        "precision": 0.75,
+        "recall": 0.9,
+        "f1": 0.8181818181818182,
+        "support": 10
+      },
+      "limon": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 10
+      },
+      "manzana": {
+        "precision": 0.6363636363636364,
+        "recall": 0.7,
+        "f1": 0.6666666666666666,
+        "support": 10
+      },
+      "naranja": {
+        "precision": 1.0,
+        "recall": 0.1,
+        "f1": 0.18181818181818182,
+        "support": 10
+      },
+      "pera": {
+        "precision": 0.30303030303030304,
+        "recall": 1.0,
+        "f1": 0.46511627906976744,
+        "support": 10
+      },
+      "tomate": {
+        "precision": 0.8888888888888888,
+        "recall": 0.8,
+        "f1": 0.8421052631578947,
+        "support": 10
+      },
+      "uva": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 10
+      }
+    },
+    "confusion_matrix": [
+      [
+        8,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      [
+        0,
+        9,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        0,
+        8,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        7,
+        0,
+        3,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        3,
+        1,
+        1,
+        4,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        8,
+        0
+      ],
+      [
+        2,
+        1,
+        0,
+        1,
+        0,
+        6,
+        0,
+        0
+      ]
+    ]
   }
 }

@@ -136,7 +136,7 @@ def evaluate_real(predictor: Predictor, real_test_dir: Path, batch_size: int) ->
     y_true, y_pred = predict_dataset(predictor, dataset, batch_size, num_workers=0)
     metrics = compute_metrics(y_true, y_pred, predictor.labels)
     missing = [label for label, values in metrics["per_class"].items() if values["support"] == 0]
-    plot_confusion_matrix(metrics["confusion_matrix"], predictor.labels, "Prueba real (fotos propias)",
+    plot_confusion_matrix(metrics["confusion_matrix"], predictor.labels, "Prueba real (data/real_test)",
                           REPORTS_DIR / "confusion_matrix_real.png")
     status = "incompleta" if missing else "ok"
     return {"status": status, "missing_classes": missing, "ignored_folders": ignored, **metrics}
@@ -161,7 +161,7 @@ def build_summary(report: dict) -> str:
     lines += ["", "Variedades con menor accuracy:", ""]
     for variety, values in list(official["accuracy_by_variety"].items())[:5]:
         lines.append(f"- {variety}: {values['accuracy']:.3f} ({values['samples']} imágenes)")
-    lines += ["", "## Prueba real (fotos propias, `data/real_test/`)", ""]
+    lines += ["", "## Prueba real (`data/real_test/`)", ""]
     if real["status"] == PENDING:
         lines.append(f"**Pendiente.** {real['reason']}")
     else:
