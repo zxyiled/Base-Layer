@@ -43,11 +43,11 @@ El ajuste posterior de M7 sirve Chart.js 4.6.1 desde `app/static/vendor/` (sin C
 
 En el cierre inicial de M8 se revisaron los siete documentos y el README, se añadió `LICENSE` (MIT, «Juan Cardona, Santiago Góez, Sebastián Mejía · 2026») y se generaron 20 diapositivas con el estilo «Herbario técnico», escenario fijo de 1920 × 1080 y navegación por teclado, rueda y gestos. La puerta de cierre se verificó con `uv run pytest` (134 pruebas aprobadas) y se revisaron los cambios antes del commit en `modulo-8-entrega`. [Diapositivas](presentation/index.html)
 
-En `modulo-8-prueba-real` se ejecutó `uv run python ml_training/evaluate.py`. La prueba real quedó `incompleta`, con **53,7 % de exactitud (29 de 54 imágenes)**. La prueba oficial se mantuvo en **99,38 % sobre 17 487 imágenes**. Se generó la matriz de confusión de la prueba real y se incorporó el resultado a las diapositivas. [Informe del modelo](ml-report.md#prueba-real) · [Diapositivas](presentation/index.html)
+En la actualización de M8 se volvió a ejecutar `uv run python ml_training/evaluate.py`. La prueba real obtuvo el estado `ok` y **53,8 % de exactitud (43 de 80 imágenes, 10 por clase)**. La prueba oficial se mantuvo en **0,9938 (99,38 %) sobre 17 487 imágenes**. Se regeneró la matriz de confusión de la prueba real y se incorporó el resultado a las diapositivas. `evaluate.py` sustituyó el encabezado «fotos propias» por «Prueba real (`data/real_test/`)». [Informe del modelo](ml-report.md#prueba-real) · [Diapositivas](presentation/index.html)
 
 ## Auditoría final
 
-La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial usa un selector con las etiquetas del modelo y el resumen de video calcula el top-3 por confianza media e indica en cuántos fotogramas ganó la clase final. El modo continuo se detiene al primer error, la captura da preferencia a la cámara trasera en móviles y la información del modelo distingue la prueba real pendiente, incompleta y completa.
+La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial usa un selector con las etiquetas del modelo y el resumen de video calcula el top-3 por confianza media e indica en cuántos fotogramas ganó la clase final. El modo continuo se detiene al primer error, la captura da preferencia a la cámara trasera en móviles y la información del modelo indica si la prueba real tiene resultados y si cubre todas las clases.
 
 `uv run pytest` aprobó **134 pruebas**. Se ampliaron las aserciones web existentes. La aplicación arrancó y el cliente de pruebas verificó que `/` sirve la interfaz y que `GET /api/v1/predictions?label=manzana` filtra por esa etiqueta. [Pruebas web](../tests/test_web/test_routes.py)
 
@@ -55,14 +55,10 @@ La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial u
 
 - Una persona debe fusionar `ML-project` en `main`, la rama predeterminada del remoto, que aún no contiene esa integración. `.gitignore` se añadió en ambas ramas (`add/add`). `LICENSE` se borró en `main` y sigue presente en `ML-project`. Se debe conservar el `LICENSE` de `ML-project`.
 
-## Pendiente opcional
-
-- Añadir imágenes de pera y uva en formatos admitidos y volver a ejecutar la evaluación para pasar a estado `ok`. Convertir también los seis AVIF a un formato admitido para incluirlos en la evaluación.
-
 ## Diferencias con el plan
 
 - **Selección del artefacto.** La mayor exactitud de validación eligió la época 3, al final de la etapa de cabeza, cuyo artefacto dio **0,9915** en `Test/`. Después de ver ese resultado, se adoptó la menor pérdida de validación con la exactitud como desempate. Al repetir el entrenamiento con la misma semilla y las mismas métricas por época, el nuevo criterio eligió la época 5, de ajuste fino, con pérdida de validación **0,0096**, exactitud de validación **0,9963** y exactitud oficial **0,9938**. [Informe del modelo](ml-report.md#cambio-del-criterio-de-selección)
-- **Origen y cobertura de la prueba real.** El plan pedía fotos propias tomadas con cámara. El equipo usó imágenes descargadas de internet, de stock y de otros sitios web. Algunas parecen generadas o retocadas. La muestra carece de imágenes de pera y uva. [Informe del modelo](ml-report.md#prueba-real)
+- **Origen de la prueba real.** El plan pedía fotos propias tomadas con cámara. El equipo usó imágenes descargadas de internet para las ocho clases. [Informe del modelo](ml-report.md#prueba-real)
 - **Versiones del modelo (M2).** Se conserva `ModelVersion`, incorporado fuera del plan, para identificar qué artefacto generó cada predicción. En M4 se registrará la versión del artefacto cargado y se enlazará cada predicción con `model_version_id`. El repositorio conserva `activate()` y `get_active()`. La aplicación cargará un único modelo.
 - **Esquema y filtros (M2).** El M2 original creaba las tablas con `db.create_all()`. La corrección introduce migraciones con Flask-Migrate y Alembic, y completa los campos `file_size_bytes` e `inference_ms` y el filtro por fechas previstos en el plan.
 - **Registros de aplicación (M3).** Los logs se escriben solo en consola y en un archivo rotativo, según la decisión aprobada. La migración `7e4b0e45cdaf` elimina la tabla `app_logs`. Su `downgrade` recrea la tabla vacía con los tipos de la revisión inicial. Así se mantiene la escritura de logs durante fallos de la base de datos y se evita la recursión con los logs de SQLAlchemy.

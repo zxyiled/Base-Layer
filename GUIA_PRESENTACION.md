@@ -12,7 +12,7 @@ Guía personal para la exposición del clasificador de frutas. Tu parte son las 
    - `LICENSE`: conserva el de `ML-project`.
 3. **Las diapositivas están en `docs/presentation/index.html`.** Se movieron desde `docs/presentacion/`, y los enlaces del README y los docs ya apuntan a la nueva ruta.
 4. **La diapositiva 18 quedó desactualizada en un punto.** El punto 04 dice «votación mayoritaria y confianza media». Desde la auditoría, el resumen del video ordena las clases por **confianza media sobre todos los fotogramas** y además informa en cuántos fotogramas ganó la clase final. Dilo así al exponer o corrige el texto.
-5. **La prueba real ya tiene resultado: 53,7 % (29 de 54), en estado `incompleta`.** Las imágenes son de internet, no fotos propias, y faltan pera y uva. Está en las diapositivas 1, 13 y 20; prepara la respuesta de la sección 4.
+5. **La prueba real ya tiene resultado: 53,8 % (43 de 80, 10 por clase), en estado `ok`.** Las imágenes son de internet, no fotos propias. Está en las diapositivas 1, 13 y 20; prepara la respuesta de la sección 4.
 
 ### Comandos para la demo
 
@@ -34,7 +34,7 @@ La cámara solo funciona en `localhost` o con HTTPS. Si usas la IP de la red, el
 
 Una aplicación Flask clasifica una imagen en **8 frutas**: banano, fresa, limón, manzana, naranja, pera, tomate y uva. El modelo es **MobileNetV3-Small** ajustado por transfer learning sobre **Fruits-360** (100 × 100 px). La imagen llega por cámara, por archivo o como fotograma de un video. Cada predicción se guarda en **PostgreSQL** y se consulta en una interfaz web con historial, estadísticas, información del modelo y logs. Todo corre en CPU y se levanta con `docker compose`.
 
-**Prueba oficial: 99,38 %** sobre 17 487 imágenes. **Imágenes de internet: 53,7 %** (29 de 54, sin pera ni uva).
+**Prueba oficial: 99,38 %** sobre 17 487 imágenes. **Imágenes de internet: 53,8 %** (43 de 80, 10 por clase).
 
 ---
 
@@ -221,7 +221,7 @@ Explica cada punto en una frase:
 1. **99,38 % demuestra que funciona en el entorno controlado**: fondo blanco y rotación controlada. No es una promesa para cualquier foto.
 2. **La partición por índice evitó una validación engañosa:** separar los fotogramas al azar habría puesto casi la misma imagen en entrenamiento y validación.
 3. **El cambio de criterio de selección pudo influir:** se cambió después de ver el resultado de `Test/`. Para medir la mejora sin sesgo haría falta otro conjunto de prueba independiente.
-4. **Con imágenes de internet baja a 53,7 %:** el modelo todavía no generaliza fuera de Fruits-360. Por eso hablamos de cambio de dominio.
+4. **Con imágenes de internet baja a 53,8 %:** el modelo todavía no generaliza fuera de Fruits-360. Por eso hablamos de cambio de dominio.
 
 **Limitaciones que conviene decir tú antes de que te las pregunten:**
 - **Conjunto cerrado:** el modelo siempre elige una de las 8 clases; no puede decir «no es una fruta». Una mejora sería un umbral de confianza que responda «no estoy seguro».
@@ -293,20 +293,20 @@ Explica cada punto en una frase:
   - más bajos: uva con precisión 0,981 (le llegan manzanas y tomates mal clasificados) y pera con recall 0,987 (51 peras clasificadas como manzanas).
 - **Confusiones:** 51 peras como manzanas, 27 manzanas como uvas, 9 manzanas como tomates y 5 tomates como uvas. Son frutas redondas o de colores parecidos.
 - **Variedades más débiles:** Pear Red 1 (0,811) y Apple 6 (0,879). El promedio alto esconde estos casos.
-- **Prueba real (cambio de dominio):** **53,7 %**, 29 de 54 imágenes de internet, en estado `incompleta`.
-  - Faltan pera y uva, y 6 archivos `.avif` no se evalúan.
-  - Por clase: banano 8/10, fresa 9/10, tomate 5/7, manzana 7/10, limón 0/8 y naranja 0/9.
-  - «Pera» funciona como sumidero: recibe 15 de los 25 errores aunque no hay ninguna pera.
-  - Los limones de las imágenes son verdes (limas), mientras que el limón de Fruits-360 es amarillo; salen como pera con confianza de 0,99 a 1,00.
+- **Prueba real (cambio de dominio):** **53,8 %**, 43 de 80 imágenes de internet (10 por clase), en estado `ok`.
+  - Por clase: pera 10/10, fresa 9/10, banano 8/10, tomate 8/10, manzana 7/10, naranja 1/10, limón 0/10 y uva 0/10.
+  - «Pera» funciona como sumidero: recibe 23 de los 37 errores. Por eso su recall es 1,0 pero su precisión solo 0,30: **el 10/10 de pera no significa que reconozca bien las peras**.
+  - Los limones de las imágenes son verdes (limas), mientras que el limón de Fruits-360 es amarillo; salen como pera con confianza de 0,91 a 1,00.
+  - Las uvas de internet son racimos con hojas y fondos variados; ninguna se reconoce y 6 de 10 salen como pera.
 
 ---
 
 ## 4. Preguntas difíciles (de cualquier parte)
 
 - **«99 % parece demasiado bueno, ¿hay fuga?»** La partición por índice con hueco lo evita, y una prueba lo verifica sobre el manifiesto. `Test/` son videos distintos de los de entrenamiento. El número es alto porque el dominio es fácil: fondo blanco, fruta centrada y sin ruido. Por eso insistimos en la prueba real.
-- **«¿Y fuera de Fruits-360?»** Con 54 imágenes de internet baja a **53,7 %**. Dilo sin rodeos: **no son fotos propias**, sino imágenes descargadas, y faltan pera y uva, así que es una muestra pequeña e incompleta.
+- **«¿Y fuera de Fruits-360?»** Con 80 imágenes de internet (10 por clase) baja a **53,8 %**. Dilo sin rodeos: **no son fotos propias**, sino imágenes descargadas, y es una muestra pequeña.
   - La lección es el cambio de dominio. El modelo aprendió fondo blanco y una sola fruta centrada; con fondos oscuros, varias frutas o limas verdes, falla.
-  - **Tampoco avisa cuando falla**: la confianza media es 0,91 en los aciertos y 0,77 en los errores, y algunos errores llegan a 0,99. Un umbral de confianza no basta.
+  - **Tampoco avisa cuando falla**: la confianza media es 0,90 en los aciertos y 0,80 en los errores, y 16 de los 37 errores superan 0,90. Un umbral de confianza no basta.
   - Para mejorar: entrenar con fondos variados o con fotos reales.
 - **«¿Qué pasa si le muestro un kiwi?»** Devuelve una de las 8 clases, normalmente con menor confianza: es un clasificador de conjunto cerrado. Un umbral de confianza permitiría responder «no estoy seguro».
 - **«¿Cómo lo probaron?»** Con 134 pruebas de `pytest`, que cubren el ML (preprocesamiento, partición, predictor, evaluación), la persistencia y las migraciones, los logs, los servicios, cada endpoint con sus errores y la ruta web. También probamos el contenedor con PostgreSQL 17.6: una predicción real guardada, errores en español, 404 en HTML fuera de la API y usuario no root.
@@ -340,5 +340,5 @@ Explica cada punto en una frase:
 | Logs | `logs/app.log`, 1 MB × 5 respaldos, UTC |
 | Imagen Docker | 5,7 GB → 1,72 GB; Gunicorn con 1 worker y 4 hilos |
 | PostgreSQL | 17.6-alpine con healthcheck |
-| Imágenes de internet | 53,7 % (29 de 54), sin pera ni uva |
+| Imágenes de internet | 53,8 % (43 de 80), 10 por clase |
 | Pruebas | 134 con `uv run pytest` |

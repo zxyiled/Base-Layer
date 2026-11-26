@@ -72,7 +72,7 @@ La vista previa usa `getUserMedia` con `facingMode: { ideal: 'environment' }` pa
 
 El navegador selecciona hasta ocho fotogramas del video y los envía como imágenes con `source=video`. El resumen ordena las clases por su confianza media sobre todos los fotogramas. Si una clase queda fuera del top-3 de un fotograma, su confianza cuenta como cero en ese fotograma. Las tres medias más altas forman el top-3 del resumen. La nota indica en cuántos fotogramas ganó la clase con la media más alta.
 
-El selector «Etiqueta» del historial se llena con las clases de `GET /api/v1/model` para enviar los valores exactos que compara la API. En «Información del modelo», la prueba real muestra «Pendiente» si no hay fotos, la exactitud seguida de «(faltan clases)» si el estado es `incompleta` y la exactitud si es `ok`.
+El selector «Etiqueta» del historial se llena con las clases de `GET /api/v1/model` para enviar los valores exactos que compara la API. En «Información del modelo», la prueba real muestra «Pendiente» si no hay fotos y la exactitud cuando hay resultados. Si faltan clases, añade «(faltan clases)» después de la exactitud.
 
 Las estadísticas se dibujan con Chart.js a partir de `GET /api/v1/stats`, con tablas de datos equivalentes y una paleta que no depende solo del color. El estado de salud, la información del modelo y los registros se cargan al abrir la página y se pueden actualizar de forma independiente.
 
