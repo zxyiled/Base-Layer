@@ -53,6 +53,7 @@ La rama `fix/auditoria-final` parte de `ML-project` en `221eddd`. El historial u
 
 ## Pendiente antes de la entrega (lunes 23 de noviembre de 2026)
 
+- En `entrega-final` se retiraron las 80 imágenes de internet de `data/real_test/`. Queda pendiente tomar fotos propias y volver a evaluar. [Instrucciones para agregar las fotos](../data/real_test/README.md)
 - Una persona debe fusionar `ML-project` en `main`, la rama predeterminada del remoto, que aún no contiene esa integración. `.gitignore` se añadió en ambas ramas (`add/add`). `LICENSE` se borró en `main` y sigue presente en `ML-project`. Se debe conservar el `LICENSE` de `ML-project`.
 
 ## Diferencias con el plan
