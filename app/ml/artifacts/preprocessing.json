@@ -1,0 +1,39 @@
+{
+  "architecture": "mobilenet_v3_small",
+  "num_classes": 8,
+  "source_image_size": 100,
+  "image_size": 224,
+  "resize": "center square crop, then bilinear resize to image_size x image_size",
+  "mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "std": [
+    0.229,
+    0.224,
+    0.225
+  ],
+  "color_mode": "RGB",
+  "training": {
+    "best": {
+      "epoch": 5,
+      "stage": "finetune",
+      "val_accuracy": 0.9963184537505753,
+      "val_loss": 0.009608243103867703
+    },
+    "selection": "min val_loss, val_accuracy tie-break",
+    "seed": 42,
+    "hyperparameters": {
+      "epochs_head": 3,
+      "epochs_finetune": 5,
+      "lr_head": 0.001,
+      "lr_finetune": 0.0001,
+      "unfreeze_blocks": 4,
+      "batch_size": 64,
+      "num_workers": 4,
+      "max_batches": 0,
+      "seed": 42
+    }
+  }
+}

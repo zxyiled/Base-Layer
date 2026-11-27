@@ -1,0 +1,51 @@
+# Version control
+.git
+.gitignore
+
+# Local environments and secrets
+.venv
+venv
+env
+.env
+.env.*
+
+# Python caches and build artifacts (patrones anidados: aplican en cualquier carpeta)
+**/__pycache__
+**/*.py[cod]
+**/*.pyo
+**/*.so
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+.coverage
+htmlcov
+dist
+build
+**/*.egg-info
+
+# Development-only files
+tests
+ml_training/notebooks
+data/raw
+**/*.zip
+logs
+uploads
+docs
+
+# AI agent tooling (no se necesita en la imagen)
+.agents
+.claude
+.codex
+AGENTS.md
+CLAUDE.md
+
+# Editor and OS files
+.vscode
+.idea
+**/.DS_Store
+**/Thumbs.db
+
+# Logs and temporary files
+**/*.log
+**/*.tmp
+**/*.swp

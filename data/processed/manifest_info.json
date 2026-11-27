@@ -1,0 +1,348 @@
+{
+  "dataset": "Fruits-360 (100x100), Mihai Oltean, CC BY-SA 4.0",
+  "labels": [
+    "banano",
+    "fresa",
+    "limon",
+    "manzana",
+    "naranja",
+    "pera",
+    "tomate",
+    "uva"
+  ],
+  "fruit_prefixes": {
+    "banano": "Banana",
+    "fresa": "Strawberry",
+    "limon": "Lemon",
+    "manzana": "Apple",
+    "naranja": "Orange",
+    "pera": "Pear",
+    "tomate": "Tomato",
+    "uva": "Grape"
+  },
+  "excluded_varieties": [
+    "Orange peeled 1",
+    "Strawberry Wedge 1"
+  ],
+  "varieties": {
+    "Training": {
+      "banano": [
+        "Banana 1",
+        "Banana 2",
+        "Banana 3",
+        "Banana 4",
+        "Banana Lady Finger 1",
+        "Banana Red 1"
+      ],
+      "fresa": [
+        "Strawberry 1",
+        "Strawberry 2",
+        "Strawberry 3"
+      ],
+      "limon": [
+        "Lemon 1",
+        "Lemon Meyer 1"
+      ],
+      "manzana": [
+        "Apple 10",
+        "Apple 11",
+        "Apple 12",
+        "Apple 13",
+        "Apple 14",
+        "Apple 17",
+        "Apple 18",
+        "Apple 19",
+        "Apple 20",
+        "Apple 21",
+        "Apple 22",
+        "Apple 23",
+        "Apple 5",
+        "Apple 6",
+        "Apple 7",
+        "Apple 8",
+        "Apple 9",
+        "Apple Braeburn 1",
+        "Apple Crimson Snow 1",
+        "Apple Golden 1",
+        "Apple Golden 2",
+        "Apple Golden 3",
+        "Apple Granny Smith 1",
+        "Apple Pink Lady 1",
+        "Apple Red 1",
+        "Apple Red 2",
+        "Apple Red 3",
+        "Apple Red Delicious 1",
+        "Apple Red Yellow 1",
+        "Apple Red Yellow 2"
+      ],
+      "naranja": [
+        "Orange 1",
+        "Orange 2",
+        "Orange 3",
+        "Orange 5",
+        "orange 4"
+      ],
+      "pera": [
+        "Pear 1",
+        "Pear 10",
+        "Pear 11",
+        "Pear 12",
+        "Pear 13",
+        "Pear 14",
+        "Pear 2",
+        "Pear 3",
+        "Pear 5",
+        "Pear 6",
+        "Pear 7",
+        "Pear 8",
+        "Pear 9",
+        "Pear Abate 1",
+        "Pear Forelle 1",
+        "Pear Kaiser 1",
+        "Pear Monster 1",
+        "Pear Red 1",
+        "Pear Stone 1",
+        "Pear Williams 1"
+      ],
+      "tomate": [
+        "Tomato 1",
+        "Tomato 10",
+        "Tomato 11",
+        "Tomato 2",
+        "Tomato 3",
+        "Tomato 4",
+        "Tomato 5",
+        "Tomato 7",
+        "Tomato 8",
+        "Tomato 9",
+        "Tomato Cherry Maroon 1",
+        "Tomato Cherry Orange 1",
+        "Tomato Cherry Red 1",
+        "Tomato Cherry Red 2",
+        "Tomato Cherry Yellow 1",
+        "Tomato Heart 1",
+        "Tomato Maroon 1",
+        "Tomato Maroon 2",
+        "Tomato Yellow 1"
+      ],
+      "uva": [
+        "Grape 1",
+        "Grape Blue 1",
+        "Grape Pink 1",
+        "Grape White 1",
+        "Grape White 2",
+        "Grape White 3",
+        "Grape White 4",
+        "Grape pink 2",
+        "grape pink 3"
+      ]
+    },
+    "Test": {
+      "banano": [
+        "Banana 1",
+        "Banana 2",
+        "Banana 3",
+        "Banana 4",
+        "Banana Lady Finger 1",
+        "Banana Red 1"
+      ],
+      "fresa": [
+        "Strawberry 1",
+        "Strawberry 2",
+        "Strawberry 3"
+      ],
+      "limon": [
+        "Lemon 1",
+        "Lemon Meyer 1"
+      ],
+      "manzana": [
+        "Apple 10",
+        "Apple 11",
+        "Apple 12",
+        "Apple 13",
+        "Apple 14",
+        "Apple 17",
+        "Apple 18",
+        "Apple 19",
+        "Apple 20",
+        "Apple 21",
+        "Apple 22",
+        "Apple 23",
+        "Apple 5",
+        "Apple 6",
+        "Apple 7",
+        "Apple 8",
+        "Apple 9",
+        "Apple Braeburn 1",
+        "Apple Crimson Snow 1",
+        "Apple Golden 1",
+        "Apple Golden 2",
+        "Apple Golden 3",
+        "Apple Granny Smith 1",
+        "Apple Pink Lady 1",
+        "Apple Red 1",
+        "Apple Red 2",
+        "Apple Red 3",
+        "Apple Red Delicious 1",
+        "Apple Red Yellow 1",
+        "Apple Red Yellow 2"
+      ],
+      "naranja": [
+        "Orange 1",
+        "Orange 2",
+        "Orange 3",
+        "Orange 5",
+        "orange 4"
+      ],
+      "pera": [
+        "Pear 1",
+        "Pear 10",
+        "Pear 11",
+        "Pear 12",
+        "Pear 13",
+        "Pear 14",
+        "Pear 2",
+        "Pear 3",
+        "Pear 5",
+        "Pear 6",
+        "Pear 7",
+        "Pear 8",
+        "Pear 9",
+        "Pear Abate 1",
+        "Pear Forelle 1",
+        "Pear Kaiser 1",
+        "Pear Monster 1",
+        "Pear Red 1",
+        "Pear Stone 1",
+        "Pear Williams 1"
+      ],
+      "tomate": [
+        "Tomato 1",
+        "Tomato 10",
+        "Tomato 11",
+        "Tomato 2",
+        "Tomato 3",
+        "Tomato 4",
+        "Tomato 5",
+        "Tomato 7",
+        "Tomato 8",
+        "Tomato 9",
+        "Tomato Cherry Maroon 1",
+        "Tomato Cherry Orange 1",
+        "Tomato Cherry Red 1",
+        "Tomato Cherry Red 2",
+        "Tomato Cherry Yellow 1",
+        "Tomato Heart 1",
+        "Tomato Maroon 1",
+        "Tomato Maroon 2",
+        "Tomato Yellow 1"
+      ],
+      "uva": [
+        "Grape 1",
+        "Grape Blue 1",
+        "Grape Pink 1",
+        "Grape White 1",
+        "Grape White 2",
+        "Grape White 3",
+        "Grape White 4",
+        "Grape pink 2",
+        "grape pink 3"
+      ]
+    }
+  },
+  "split_rule": {
+    "description": "Per Training/ variety: sort unique frame indices N; the last val_fraction of them is validation; training keeps only N < min(val N) - gap. All files with the same N (N_100, r_N_100, r2_N_100...) share a split. Test/ is the official test split.",
+    "val_fraction": 0.15,
+    "gap": 10
+  },
+  "balance": {
+    "max_train_per_fruit": 1200,
+    "max_val_per_fruit": 300,
+    "seed": 42,
+    "note": "Test is not subsampled. Remaining imbalance is handled by WeightedRandomSampler."
+  },
+  "counts_before_subsampling": {
+    "banano": {
+      "train": 1734,
+      "val": 318,
+      "test": 719
+    },
+    "fresa": {
+      "train": 1180,
+      "val": 214,
+      "test": 479
+    },
+    "limon": {
+      "train": 783,
+      "val": 159,
+      "test": 330
+    },
+    "manzana": {
+      "train": 13624,
+      "val": 2402,
+      "test": 5506
+    },
+    "naranja": {
+      "train": 2912,
+      "val": 529,
+      "test": 1180
+    },
+    "pera": {
+      "train": 10316,
+      "val": 1811,
+      "test": 4164
+    },
+    "tomate": {
+      "train": 8540,
+      "val": 1388,
+      "test": 3413
+    },
+    "uva": {
+      "train": 4184,
+      "val": 748,
+      "test": 1696
+    }
+  },
+  "counts": {
+    "banano": {
+      "train": 1200,
+      "val": 300,
+      "test": 719
+    },
+    "fresa": {
+      "train": 1180,
+      "val": 214,
+      "test": 479
+    },
+    "limon": {
+      "train": 783,
+      "val": 159,
+      "test": 330
+    },
+    "manzana": {
+      "train": 1200,
+      "val": 300,
+      "test": 5506
+    },
+    "naranja": {
+      "train": 1200,
+      "val": 300,
+      "test": 1180
+    },
+    "pera": {
+      "train": 1200,
+      "val": 300,
+      "test": 4164
+    },
+    "tomate": {
+      "train": 1200,
+      "val": 300,
+      "test": 3413
+    },
+    "uva": {
+      "train": 1200,
+      "val": 300,
+      "test": 1696
+    }
+  }
+}

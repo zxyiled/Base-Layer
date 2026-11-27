@@ -1,20 +1,57 @@
-# Ignore env
+# Secretos y entornos
 .env
+.env.*
+!.env.example
+.venv/
+venv/
+env/
 
-# Ignore IDE
-.vscode/
-.idea/
+# Datos y artefactos pesados
+data/raw/
+*.zip
+*.tar
+*.tar.gz
+uploads/
+ml_training/checkpoints/
+*.ckpt
+runs/
+wandb/
+mlruns/
+lightning_logs/
 
-# OS
+# Logs y temporales
+logs/
+*.log
+*.tmp
+*.swp
+
+# Bases de datos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Python, pruebas y build
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+.ipynb_checkpoints/
+
+# Herramientas de agentes IA (configuración local, no es parte del proyecto)
+.agents/
+.claude/
+.codex/
+.frontend-slides/
+Skills/
+
+# Sistema y editores
 .DS_Store
 Thumbs.db
-
-# Ignore data
-.pytest_cache
-data/
-
-# Virtual environment
-.venv/
-
-# Python bytecode cache
-__pycache__/
+.idea/
+.vscode/

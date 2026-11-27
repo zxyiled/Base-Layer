@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Presentación del clasificador de frutas: dataset, modelo, API, interfaz y resultados reales.">
+    <title>Clasificación de frutas · Proyecto académico</title>
+
+    <!-- === TIPOGRAFÍA: Fraunces + IBM Plex (Google Fonts) === -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           FIXED 16:9 STAGE: MANDATORY BASE STYLES
+           Include this ENTIRE file in every presentation.
+           Slides are authored at 1920×1080 and scaled as a whole.
+           =========================================== */
+
+        /* 1. Lock the browser viewport */
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: var(--stage-bg, #000);
+        }
+
+        /* 2. Full-window deck viewport */
+        .deck-viewport {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            background: var(--stage-bg, #000);
+        }
+
+        /* 3. Fixed 16:9 design canvas.
+           JavaScript sets transform: translate(...) scale(...). */
+        .deck-stage {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            transform-origin: 0 0;
+            background: var(--slide-bg, #fff);
+        }
+
+        /* 4. Slides stack inside the fixed stage.
+           Content must be laid out at 1920×1080, not reflowed per device. */
+        .slide {
+            position: absolute;
+            inset: 0;
+            width: 1920px;
+            height: 1080px;
+            overflow: hidden;
+            display: block;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            background: var(--slide-bg, #fff);
+        }
+
+        .slide.active,
+        .slide.visible {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 1;
+        }
+
+        /* 5. Keep media inside authored slide bounds */
+        img,
+        video,
+        canvas,
+        svg {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* 6. Presentation chrome stays outside the slide design system */
+        .deck-controls {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        /* 7. Print one fixed-size slide per page */
+        @media print {
+            html,
+            body {
+                width: 1920px;
+                height: auto;
+                overflow: visible;
+                background: #fff;
+            }
+
+            .deck-viewport {
+                position: static;
+                overflow: visible;
+                background: #fff;
+            }
+
+            .deck-stage {
+                position: static;
+                width: auto;
+                height: auto;
+                transform: none !important;
+                background: none;
+            }
+
+            .slide {
+                position: relative;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                width: 1920px;
+                height: 1080px;
+                break-after: page;
+                page-break-after: always;
+            }
+
+            .slide:last-child {
+                break-after: auto;
+                page-break-after: auto;
+            }
+
+            .deck-controls {
+                display: none !important;
+            }
+        }
+
+        /* 8. Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+        }
+
+        /* ===========================================
+           HERBARIO TÉCNICO — TOKENS Y BASE
+           Paleta, tipografías y ritmo de la portada elegida.
+           =========================================== */
+        :root {
+            --stage-bg: #cfc9b6;
+            --slide-bg: #f4f0e6;
+            --paper: #f4f0e6;
+            --ink: #14372e;
+            --graphite: #3f4a46;
+            --accent: #e2622a;
+            --line: #c9c4b3;
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'IBM Plex Sans', Arial, sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { box-sizing: border-box; }
+
+        .slide {
+            color: var(--ink);
+            font-family: var(--font-body);
+            padding: 118px 96px 104px 184px;
+        }
+
+        /* Franja lateral y folio: chrome real de la presentación. */
+        .spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 104px;
+            background: var(--ink);
+            color: var(--paper);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .spine span {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: var(--font-mono);
+            font-size: 22px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+        }
+        .folio {
+            position: absolute;
+            left: 184px;
+            top: 56px;
+            font-family: var(--font-mono);
+            font-size: 20px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--graphite);
+        }
+        .slide-no {
+            position: absolute;
+            right: 96px;
+            bottom: 58px;
+            font-family: var(--font-mono);
+            font-size: 20px;
+            color: var(--graphite);
+        }
+        .footline {
+            position: absolute;
+            left: 184px;
+            bottom: 58px;
+            font-family: var(--font-mono);
+            font-size: 18px;
+            letter-spacing: 0.08em;
+            color: var(--graphite);
+        }
+        .accent-rule {
+            width: 126px;
+            height: 4px;
+            background: var(--accent);
+            margin: 26px 0 32px;
+        }
+
+        /* === TIPOGRAFÍA Y BLOQUES DE CONTENIDO === */
+        h1, h2, h3 { font-family: var(--font-display); margin: 0; }
+        h1 { font-size: 150px; font-weight: 700; line-height: 0.94; letter-spacing: -0.03em; }
+        h2 { font-size: 96px; font-weight: 700; line-height: 1.0; letter-spacing: -0.025em; }
+        h3 { font-size: 34px; font-weight: 700; line-height: 1.2; }
+        p { margin: 0; }
+        .code {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .lead {
+            margin-top: 32px;
+            max-width: 1380px;
+            font-size: 40px;
+            line-height: 1.45;
+            color: var(--graphite);
+        }
+        .lead strong { color: var(--ink); }
+        .note {
+            margin-top: 30px;
+            max-width: 1400px;
+            padding-left: 24px;
+            border-left: 4px solid var(--accent);
+            font-size: 28px;
+            line-height: 1.45;
+            color: var(--graphite);
+        }
+        .big {
+            font-family: var(--font-display);
+            font-size: 210px;
+            font-weight: 700;
+            line-height: 0.9;
+            letter-spacing: -0.04em;
+            color: var(--accent);
+        }
+        .medium {
+            font-family: var(--font-display);
+            font-size: 126px;
+            font-weight: 700;
+            line-height: 0.95;
+            color: var(--ink);
+        }
+        .stamp {
+            display: inline-block;
+            margin-top: 42px;
+            padding: 14px 26px;
+            border: 3px solid var(--accent);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 23px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .chip {
+            display: inline-block;
+            padding: 10px 20px;
+            border: 2px solid var(--line);
+            border-radius: 999px;
+            font-family: var(--font-mono);
+            font-size: 21px;
+            color: var(--graphite);
+            margin: 26px 12px 0 0;
+        }
+
+        /* === COMPOSICIONES === */
+        .split { display: flex; gap: 72px; align-items: flex-start; }
+        .split > * { flex: 1 1 0; min-width: 0; }
+        .stack { display: grid; gap: 22px; }
+        .card {
+            padding: 28px 32px;
+            border: 2px solid var(--line);
+            border-top: 5px solid var(--accent);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .card .kicker {
+            font-family: var(--font-mono);
+            font-size: 19px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .card p { margin-top: 10px; font-size: 29px; line-height: 1.35; }
+        .list { list-style: none; padding: 0; margin: 26px 0 0; }
+        .list li {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line);
+            font-size: 32px;
+        }
+        .list li span { font-family: var(--font-mono); color: var(--accent); margin-right: 20px; }
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 22px;
+            font-family: var(--font-mono);
+            font-size: 27px;
+        }
+        table.data th, table.data td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+        table.data th { font-size: 20px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--graphite); }
+        table.data td:first-child { font-family: var(--font-body); font-weight: 600; }
+        .steps { display: flex; gap: 24px; margin-top: 44px; }
+        .step {
+            flex: 1 1 0;
+            padding: 26px 24px;
+            min-height: 230px;
+            border: 2px solid var(--line);
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .step b { display: block; font-family: var(--font-mono); font-size: 20px; color: var(--accent); }
+        .step h3 { margin-top: 18px; font-size: 30px; }
+        .step p { margin-top: 12px; font-size: 24px; line-height: 1.3; color: var(--graphite); }
+        .ledger {
+            position: absolute;
+            left: 184px;
+            right: 96px;
+            bottom: 100px;
+            display: flex;
+            gap: 72px;
+            padding-top: 24px;
+            border-top: 2px solid var(--ink);
+            font-family: var(--font-mono);
+        }
+        .ledger div { min-width: 300px; }
+        .ledger dt { font-size: 19px; letter-spacing: 0.12em; color: var(--graphite); text-transform: uppercase; }
+        .ledger dd { margin: 8px 0 0; font-size: 30px; font-weight: 600; }
+        .ledger .pending { color: var(--accent); }
+
+        /* Motivo gráfico: arcos concéntricos, sin ilustraciones. */
+        .rings { position: absolute; right: 92px; top: 150px; width: 500px; height: 500px; }
+        .rings circle, .rings path { fill: none; stroke: var(--ink); stroke-width: 2; }
+        .rings .accent { stroke: var(--accent); stroke-width: 10; }
+        .rings .thin { stroke: var(--line); stroke-width: 1; }
+        .rings circle { stroke-dasharray: 1600; stroke-dashoffset: 1600; }
+        .slide.visible .rings circle { animation: draw 1.2s var(--ease-out-expo) forwards; }
+        .slide.visible .rings circle:nth-child(2) { animation-delay: 0.12s; }
+        .slide.visible .rings circle:nth-child(3) { animation-delay: 0.24s; }
+        .slide.visible .rings circle:nth-child(4) { animation-delay: 0.36s; }
+        .slide.visible .rings circle:nth-child(5) { animation-delay: 0.48s; }
+        .slide.visible .rings path { animation: fade 0.9s var(--ease-out-expo) 0.6s forwards; opacity: 0; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes fade { to { opacity: 1; } }
+
+        /* Línea de índices para la partición. */
+        .indexline { display: flex; gap: 10px; margin-top: 46px; align-items: center; }
+        .indexline i {
+            display: block;
+            width: 54px;
+            height: 54px;
+            background: var(--line);
+            font-family: var(--font-mono);
+            font-style: normal;
+            font-size: 20px;
+            line-height: 54px;
+            text-align: center;
+            color: var(--paper);
+        }
+        .indexline i.val { background: var(--accent); }
+        .indexline i.gap { background: transparent; border: 2px dashed var(--graphite); color: var(--graphite); }
+        .indexline span { margin-left: 18px; font-family: var(--font-mono); font-size: 23px; color: var(--graphite); }
+
+        /* === ANIMACIONES DE ENTRADA === */
+        .reveal {
+            opacity: 0;
+            transform: translateY(26px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+            transition-delay: var(--d, 0s);
+        }
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-38px);
+            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+            transition-delay: var(--d, 0s);
+        }
+        .slide.visible .reveal,
+        .slide.visible .reveal-left { opacity: 1; transform: none; }
+
+        /* === CONTROLES FUERA DEL ESCENARIO === */
+        .deck-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(20, 55, 46, 0.88);
+            color: var(--paper);
+            font-family: var(--font-mono);
+            font-size: 14px;
+        }
+        .deck-controls button {
+            border: 0;
+            border-radius: 999px;
+            padding: 8px 16px;
+            background: var(--paper);
+            color: var(--ink);
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .deck-controls button:disabled { opacity: 0.35; cursor: default; }
+
+        /* === EDICIÓN EN LÍNEA (post-draft) === */
+        .edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+        .edit-toggle {
+            opacity: 0;
+            pointer-events: none;
+            position: fixed;
+            left: 18px;
+            top: 18px;
+            z-index: 10001;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid var(--paper);
+            background: var(--accent);
+            color: var(--paper);
+            font-size: 22px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        .edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+        body.editing [data-editable] { outline: 1px dashed var(--accent); outline-offset: 6px; }
+        .edit-hint {
+            position: fixed;
+            right: 18px;
+            top: 18px;
+            z-index: 10001;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(20, 55, 46, 0.88);
+            color: var(--paper);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        body.editing .edit-hint { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="deck-viewport">
+        <main class="deck-stage" id="deckStage">
+
+            <!-- 01 · Portada -->
+            <section class="slide active visible" aria-label="Portada">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <div class="content" style="position:absolute;left:184px;top:120px;right:680px;">
+                    <p class="code reveal" data-editable style="--d:.05s">Ficha 01 / Classificatio fructuum</p>
+                    <h1 class="reveal" data-editable style="--d:.14s">Clasificación<br>de frutas</h1>
+                    <p class="lead reveal" data-editable style="--d:.24s">Del conjunto de imágenes al navegador: datos, modelo, API y persistencia en un proyecto académico.</p>
+                    <span class="stamp reveal" style="--d:.34s">19 · 11 · 2026</span>
+                </div>
+                <svg class="rings" viewBox="0 0 500 500" aria-hidden="true">
+                    <circle cx="250" cy="250" r="216" class="thin"></circle>
+                    <circle cx="250" cy="250" r="180" class="accent"></circle>
+                    <circle cx="250" cy="250" r="142"></circle>
+                    <circle cx="250" cy="250" r="95" class="thin"></circle>
+                    <circle cx="250" cy="250" r="48"></circle>
+                    <path d="M250 12v476M12 250h476"></path>
+                </svg>
+                <dl class="ledger reveal" style="--d:.45s">
+                    <div><dt>Prueba oficial</dt><dd data-editable>99,38 %</dd></div>
+                    <div><dt>Imágenes evaluadas</dt><dd data-editable>17 487</dd></div>
+                    <div><dt>Imágenes de internet</dt><dd class="pending" data-editable>53,8 %</dd></div>
+                </dl>
+                <p class="slide-no">01 / 20</p>
+            </section>
+
+            <!-- 02 · Idea central -->
+            <section class="slide" aria-label="Idea central">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">Idea central</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Una fruta entra,<br>una etiqueta sale.</h2>
+                <div class="accent-rule reveal" style="--d:.16s"></div>
+                <p class="lead reveal" data-editable style="--d:.22s">La cámara, un archivo de imagen o un video llegan a un modelo local; la predicción se guarda y se muestra en el navegador.</p>
+                <div>
+                    <span class="chip">Modelo local</span>
+                    <span class="chip">Solo CPU</span>
+                    <span class="chip">PostgreSQL</span>
+                </div>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">02 / 20</p>
+            </section>
+
+            <!-- 03 · Dataset -->
+            <section class="slide" aria-label="Dataset">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">01 · Los datos</p>
+                <div class="split">
+                    <div>
+                        <h2 class="reveal" data-editable style="--d:.06s">Fruits-360,<br>100 × 100</h2>
+                        <p class="lead reveal" data-editable style="--d:.16s">Mihai Oltean, versión 2026.10.27.0 de la rama 100x100. Licencia CC BY-SA 4.0.</p>
+                        <p class="note reveal" data-editable style="--d:.26s">Imágenes con fondo blanco y rotación controlada: un entorno mucho más limpio que una foto cualquiera.</p>
+                    </div>
+                    <div class="reveal" style="--d:.3s">
+                        <div class="big">94</div>
+                        <p class="lead" style="margin-top:8px;font-size:30px">variedades agrupadas en 8 frutas</p>
+                    </div>
+                </div>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">03 / 20</p>
+            </section>
+
+            <!-- 04 · Clases -->
+            <section class="slide" aria-label="Clases">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">01 · Los datos</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Ocho frutas, 94 variedades</h2>
+                <div class="split" style="margin-top:34px">
+                    <ul class="list reveal" style="--d:.14s">
+                        <li><span>01</span> banano — 6 variedades</li>
+                        <li><span>02</span> fresa — 3 variedades</li>
+                        <li><span>03</span> limón — 2 variedades</li>
+                        <li><span>04</span> manzana — 30 variedades</li>
+                    </ul>
+                    <ul class="list reveal" style="--d:.24s">
+                        <li><span>05</span> naranja — 5 variedades</li>
+                        <li><span>06</span> pera — 20 variedades</li>
+                        <li><span>07</span> tomate — 19 variedades</li>
+                        <li><span>08</span> uva — 9 variedades</li>
+                    </ul>
+                </div>
+                <p class="note reveal" data-editable style="--d:.34s">Se agrupa por prefijo de carpeta; quedan fuera las frutas peladas o cortadas.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">04 / 20</p>
+            </section>
+
+            <!-- 05 · Riesgo de fuga -->
+            <section class="slide" aria-label="Riesgo de fuga">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">01 · Los datos</p>
+                <h2 class="reveal" data-editable style="--d:.06s">El riesgo no se ve<br>a simple vista</h2>
+                <p class="lead reveal" data-editable style="--d:.16s">Las imágenes son fotogramas de videos cortos: los índices vecinos son casi idénticos y las variantes r y r2 son la misma toma.</p>
+                <div class="steps reveal" style="--d:.26s">
+                    <div class="step"><b>N_100.jpg</b><h3>Índice N</h3><p>Una toma concreta.</p></div>
+                    <div class="step"><b>r_N_100.jpg</b><h3>Rotación</h3><p>La misma toma girada.</p></div>
+                    <div class="step"><b>r2_N_100.jpg</b><h3>Rotación 2</h3><p>Sigue siendo la misma toma.</p></div>
+                </div>
+                <p class="note reveal" style="--d:.36s">Mezclarlas al azar inflaría la validación: el modelo vería casi la misma imagen en ambos lados.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">05 / 20</p>
+            </section>
+
+            <!-- 06 · Partición -->
+            <section class="slide" aria-label="Partición">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">01 · Los datos</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Bloques contiguos,<br>con un hueco</h2>
+                <div class="indexline reveal" style="--d:.16s" aria-hidden="true">
+                    <i>N</i><i>N+1</i><i>N+2</i><i class="gap">…</i><i class="gap">…</i><i class="val">val</i><i class="val">val</i><i class="val">val</i>
+                    <span>entrenamiento → hueco de 10 índices → validación</span>
+                </div>
+                <ul class="list reveal" style="--d:.28s">
+                    <li><span>01</span> último 15 % de índices por variedad → validación</li>
+                    <li><span>02</span> se descartan 10 índices antes del bloque de validación</li>
+                    <li><span>03</span> todas las variantes del mismo N viajan juntas</li>
+                    <li><span>04</span> Test/ se reserva solo para la prueba oficial</li>
+                </ul>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">06 / 20</p>
+            </section>
+
+            <!-- 07 · Preprocesamiento -->
+            <section class="slide" aria-label="Preprocesamiento">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">02 · El modelo</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Del píxel al tensor</h2>
+                <div class="steps reveal" style="--d:.16s">
+                    <div class="step"><b>01</b><h3>Orientar y RGB</h3><p>Se corrige EXIF y se convierte a RGB.</p></div>
+                    <div class="step"><b>02</b><h3>Recorte central</h3><p>Cuadrado centrado para no deformar fotos.</p></div>
+                    <div class="step"><b>03</b><h3>224 × 224</h3><p>Redimensionado bilineal.</p></div>
+                    <div class="step"><b>04</b><h3>ImageNet</h3><p>Media y desviación de los pesos originales.</p></div>
+                </div>
+                <p class="note reveal" data-editable style="--d:.3s">En entrenamiento se añaden recorte aleatorio, volteo, rotación de hasta 20° y variación leve de color. Inferencia y entrenamiento comparten el mismo módulo.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">07 / 20</p>
+            </section>
+
+            <!-- 08 · Modelo -->
+            <section class="slide" aria-label="Modelo">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">02 · El modelo</p>
+                <h2 class="reveal" data-editable style="--d:.06s">MobileNetV3-Small<br>en dos etapas</h2>
+                <p class="lead reveal" data-editable style="--d:.14s">Pesos preentrenados de ImageNet; la última capa se sustituye por ocho salidas.</p>
+                <div class="split" style="margin-top:36px">
+                    <div class="card reveal" style="--d:.24s">
+                        <p class="kicker">Etapa 01 / épocas 1–3</p>
+                        <h3>Solo la cabeza</h3>
+                        <p>El resto del modelo queda congelado. Tasa de aprendizaje 0,001.</p>
+                    </div>
+                    <div class="card reveal" style="--d:.34s">
+                        <p class="kicker">Etapa 02 / épocas 4–8</p>
+                        <h3>Últimos cuatro bloques</h3>
+                        <p>Ajuste fino con tasa de aprendizaje 0,0001.</p>
+                    </div>
+                </div>
+                <p class="note reveal" style="--d:.44s">Semilla 42, lotes de 64 y Balanceo con WeightedRandomSampler. Las épocas tardaron entre 63 y 143 segundos en CPU.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">08 / 20</p>
+            </section>
+
+            <!-- 09 · Selección del artefacto -->
+            <section class="slide" aria-label="Selección del artefacto">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">02 · El modelo</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Elegir el artefacto<br>no fue trivial</h2>
+                <div class="split" style="margin-top:32px">
+                    <div class="card reveal" style="--d:.16s">
+                        <p class="kicker">Primer criterio: exactitud</p>
+                        <h3>Época 3</h3>
+                        <p>Solo cabeza. Exactitud de validación 0,9986 → 0,9915 en la prueba oficial.</p>
+                    </div>
+                    <div class="card reveal" style="--d:.26s">
+                        <p class="kicker">Criterio final: menor pérdida</p>
+                        <h3>Época 5</h3>
+                        <p>Ajuste fino. Pérdida 0,0096, exactitud 0,9963 → 0,9938 en la prueba oficial.</p>
+                    </div>
+                </div>
+                <p class="note reveal" data-editable style="--d:.38s">El primer resultado influyó en el cambio de criterio: haría falta un conjunto de prueba independiente para estimar la mejora con seguridad.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">09 / 20</p>
+            </section>
+
+            <!-- 10 · Resultado oficial -->
+            <section class="slide" aria-label="Resultado oficial">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">03 · Resultados</p>
+                <div class="big reveal" data-editable style="--d:.08s">99,38 %</div>
+                <h2 class="reveal" data-editable style="--d:.18s">en la prueba oficial</h2>
+                <div class="accent-rule reveal" style="--d:.26s"></div>
+                <p class="lead reveal" data-editable style="--d:.32s">17 487 imágenes de Test/. Promedio macro: precisión 0,995, recall 0,997 y F1 0,996.</p>
+                <p class="note reveal" style="--d:.42s">Test/ quedó fuera del entrenamiento y de la elección de hiperparámetros.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">10 / 20</p>
+            </section>
+
+            <!-- 11 · Métricas por clase -->
+            <section class="slide" aria-label="Métricas por clase">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">03 · Resultados</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Métricas por clase</h2>
+                <table class="data reveal" style="--d:.16s">
+                    <thead><tr><th>Clase</th><th>Precisión</th><th>Recall</th><th>F1</th><th>Imágenes</th></tr></thead>
+                    <tbody>
+                        <tr><td>banano</td><td>1,000</td><td>1,000</td><td>1,000</td><td>719</td></tr>
+                        <tr><td>fresa</td><td>1,000</td><td>1,000</td><td>1,000</td><td>479</td></tr>
+                        <tr><td>limón</td><td>1,000</td><td>1,000</td><td>1,000</td><td>330</td></tr>
+                        <tr><td>manzana</td><td>0,991</td><td>0,991</td><td>0,991</td><td>5 506</td></tr>
+                        <tr><td>naranja</td><td>0,995</td><td>1,000</td><td>0,997</td><td>1 180</td></tr>
+                        <tr><td>pera</td><td>0,997</td><td>0,987</td><td>0,992</td><td>4 164</td></tr>
+                        <tr><td>tomate</td><td>0,997</td><td>0,999</td><td>0,998</td><td>3 413</td></tr>
+                        <tr><td>uva</td><td>0,981</td><td>1,000</td><td>0,991</td><td>1 696</td></tr>
+                    </tbody>
+                </table>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">11 / 20</p>
+            </section>
+
+            <!-- 12 · Confusiones -->
+            <section class="slide" aria-label="Confusiones">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">03 · Resultados</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Donde aparece<br>la confusión</h2>
+                <ul class="list reveal" style="--d:.18s">
+                    <li><span>51</span> peras clasificadas como manzanas</li>
+                    <li><span>27</span> manzanas clasificadas como uvas</li>
+                    <li><span>9</span> manzanas clasificadas como tomates</li>
+                    <li><span>5</span> tomates clasificados como uvas</li>
+                </ul>
+                <p class="note reveal" data-editable style="--d:.32s">Las variedades más débiles fueron Pear Red 1 (0,811) y Apple 6 (0,879): el promedio alto no borra esos casos.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">12 / 20</p>
+            </section>
+
+            <!-- 13 · Prueba real -->
+            <section class="slide" aria-label="Prueba real">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">03 · Resultados</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Fuera del laboratorio</h2>
+                <div class="split" style="margin-top:30px">
+                    <div class="stack" style="flex:0 0 560px">
+                        <div class="card reveal" style="--d:.16s">
+                            <p class="kicker">Prueba oficial · Test/</p>
+                            <h3>99,38 %</h3>
+                            <p>Fondo blanco y rotación controlada.</p>
+                        </div>
+                        <div class="card reveal" style="--d:.26s">
+                            <p class="kicker">Imágenes de internet</p>
+                            <h3>53,8 %</h3>
+                            <p>43 de 80 aciertos, 10 por clase. Fondos, luz y encuadres reales.</p>
+                        </div>
+                    </div>
+                    <table class="data reveal" style="--d:.32s;margin-top:0">
+                        <thead><tr><th>Clase</th><th>Aciertos</th><th>Se confundió con</th></tr></thead>
+                        <tbody>
+                            <tr><td>pera</td><td>10 / 10</td><td>— (recibe 23 errores)</td></tr>
+                            <tr><td>fresa</td><td>9 / 10</td><td>manzana (1)</td></tr>
+                            <tr><td>banano</td><td>8 / 10</td><td>pera (2)</td></tr>
+                            <tr><td>tomate</td><td>8 / 10</td><td>fresa (2)</td></tr>
+                            <tr><td>manzana</td><td>7 / 10</td><td>pera (3)</td></tr>
+                            <tr><td>naranja</td><td>1 / 10</td><td>pera (4), limón (3)</td></tr>
+                            <tr><td>limón</td><td>0 / 10</td><td>pera (8)</td></tr>
+                            <tr><td>uva</td><td>0 / 10</td><td>pera (6), banano (2)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="note reveal" data-editable style="--d:.42s">Imágenes descargadas de internet, no fotos propias. «Pera» funciona como sumidero: su precisión es 0,30. Los limones verdes salen como pera con 0,99–1,00.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">13 / 20</p>
+            </section>
+
+            <!-- 14 · Arquitectura -->
+            <section class="slide" aria-label="Arquitectura">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">04 · La aplicación</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Monolito por capas</h2>
+                <div class="steps reveal" style="--d:.16s">
+                    <div class="step"><b>01</b><h3>Rutas</h3><p>Validan la entrada y serializan.</p></div>
+                    <div class="step"><b>02</b><h3>Servicios</h3><p>Orquestan decodificar, predecir y guardar.</p></div>
+                    <div class="step"><b>03</b><h3>Repositorios</h3><p>Único acceso a la base de datos.</p></div>
+                    <div class="step"><b>04</b><h3>Modelos</h3><p>Tablas SQLAlchemy.</p></div>
+                </div>
+                <p class="note reveal" data-editable style="--d:.3s">El predictor y el preprocesamiento se cargan una sola vez en create_app() y los servicios los reutilizan.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">14 / 20</p>
+            </section>
+
+            <!-- 15 · Flujo completo -->
+            <section class="slide" aria-label="Flujo de una predicción">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">04 · La aplicación</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Una predicción,<br>de extremo a extremo</h2>
+                <ul class="list reveal" style="--d:.18s">
+                    <li><span>01</span> llegan los bytes de la imagen y el campo source</li>
+                    <li><span>02</span> Pillow comprueba que no esté corrupta</li>
+                    <li><span>03</span> se aplica el preprocesamiento compartido</li>
+                    <li><span>04</span> el modelo devuelve etiqueta, confianza y top-3</li>
+                    <li><span>05</span> el repositorio guarda la fila y el log registra metadatos</li>
+                    <li><span>06</span> la API responde 201 con JSON</li>
+                </ul>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">15 / 20</p>
+            </section>
+
+            <!-- 16 · Persistencia -->
+            <section class="slide" aria-label="Persistencia">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">04 · La aplicación</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Persistencia<br>con trazabilidad</h2>
+                <ul class="list reveal" style="--d:.18s">
+                    <li><span>01</span> etiqueta, confianza y top-3 en JSON</li>
+                    <li><span>02</span> source: cámara, subida o video</li>
+                    <li><span>03</span> nombre y tamaño del archivo, nunca sus bytes</li>
+                    <li><span>04</span> tiempo de inferencia en ms y fecha UTC</li>
+                    <li><span>05</span> versión del artefacto que hizo la predicción</li>
+                </ul>
+                <p class="note reveal" style="--d:.32s">El historial se filtra por etiqueta, fuente y rango de fechas; las estadísticas se calculan en el repositorio.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">16 / 20</p>
+            </section>
+
+            <!-- 17 · API -->
+            <section class="slide" aria-label="API REST">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">04 · La aplicación</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Siete endpoints<br>y una interfaz</h2>
+                <div class="split" style="margin-top:28px">
+                    <ul class="list reveal" style="--d:.16s">
+                        <li><span>POST</span> /predictions</li>
+                        <li><span>GET</span> /predictions</li>
+                        <li><span>GET</span> /predictions/{id}</li>
+                        <li><span>GET</span> /stats</li>
+                    </ul>
+                    <ul class="list reveal" style="--d:.26s">
+                        <li><span>GET</span> /model</li>
+                        <li><span>GET</span> /logs</li>
+                        <li><span>GET</span> /health</li>
+                        <li><span>GET</span> / → interfaz web</li>
+                    </ul>
+                </div>
+                <p class="note reveal" data-editable style="--d:.38s">Todo bajo /api/v1. Los errores usan el sobre {"error": {"code", "message", "details"}} con códigos 400, 404, 405, 413, 415, 422, 500 y 503.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">17 / 20</p>
+            </section>
+
+            <!-- 18 · Interfaz -->
+            <section class="slide" aria-label="Interfaz">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">04 · La aplicación</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Cámara, archivo<br>y video</h2>
+                <ul class="list reveal" style="--d:.18s">
+                    <li><span>01</span> getUserMedia muestra la vista previa; captura con canvas</li>
+                    <li><span>02</span> modo continuo: una predicción cada 1,5 s</li>
+                    <li><span>03</span> video: hasta 8 fotogramas enviados como imágenes con source=video</li>
+                    <li><span>04</span> resumen en el navegador: confianza media por clase sobre todos los fotogramas</li>
+                    <li><span>05</span> historial, estadísticas y logs con Chart.js servido localmente</li>
+                </ul>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">18 / 20</p>
+            </section>
+
+            <!-- 19 · Docker -->
+            <section class="slide" aria-label="Docker">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">05 · Entrega</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Docker: app<br>+ PostgreSQL</h2>
+                <div class="split" style="margin-top:32px">
+                    <div class="card reveal" style="--d:.16s">
+                        <p class="kicker">Composición</p>
+                        <h3>Dos servicios</h3>
+                        <p>PostgreSQL 17.6 con healthcheck y la imagen de la app, que aplica migraciones antes de arrancar Gunicorn.</p>
+                    </div>
+                    <div class="card reveal" style="--d:.26s">
+                        <p class="kicker">Verificación</p>
+                        <h3>1,72 GB</h3>
+                        <p>Imagen reducida, credenciales solo en .env y una predicción real guardada en la base.</p>
+                    </div>
+                </div>
+                <p class="note reveal" style="--d:.38s">Un worker con cuatro hilos: RotatingFileHandler y el registro diferido de la versión del modelo exigen revisión antes de escalar procesos.</p>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">19 / 20</p>
+            </section>
+
+            <!-- 20 · Conclusiones -->
+            <section class="slide" aria-label="Conclusiones">
+                <div class="spine" aria-hidden="true"><span>Fruits-360 · 08 clases</span></div>
+                <p class="folio">05 · Entrega</p>
+                <h2 class="reveal" data-editable style="--d:.06s">Conclusiones<br>honestas</h2>
+                <ul class="list reveal" style="--d:.18s">
+                    <li><span>01</span> 99,38 % demuestra que el modelo funciona en el entorno controlado</li>
+                    <li><span>02</span> la partición por índice evitó una validación engañosa</li>
+                    <li><span>03</span> el cambio de criterio de selección pudo influir en el resultado</li>
+                    <li><span>04</span> con imágenes de internet baja a 53,8 %: todavía no generaliza</li>
+                </ul>
+                <span class="stamp reveal" style="--d:.36s">Fin · Preguntas</span>
+                <p class="footline">Clasificador de frutas · 19.11.2026</p>
+                <p class="slide-no">20 / 20</p>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- === CONTROLES DE NAVEGACIÓN (fuera del escenario) === -->
+    <nav class="deck-controls" aria-label="Navegación de diapositivas">
+        <button type="button" id="prevSlide" aria-label="Diapositiva anterior">←</button>
+        <span id="slideCounter" aria-live="polite">01 / 20</span>
+        <button type="button" id="nextSlide" aria-label="Diapositiva siguiente">→</button>
+    </nav>
+
+    <!-- === EDICIÓN EN LÍNEA (hover en la esquina o tecla E) === -->
+    <div class="edit-hotzone" id="editHotzone" title="Edición de texto"></div>
+    <button class="edit-toggle" id="editToggle" type="button" title="Editar texto (E)" aria-label="Activar edición de texto">✎</button>
+    <p class="edit-hint">Editando · Ctrl+S guarda el archivo · E sale</p>
+
+    <script>
+        /* ===========================================
+           CONTROLADOR: escala fija, teclado, táctil y rueda
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = Array.from(document.querySelectorAll('.slide'));
+                this.stage = document.getElementById('deckStage');
+                this.counter = document.getElementById('slideCounter');
+                this.current = 0;
+                this.lastWheel = 0;
+                this.bindStageScale();
+                this.bindKeyboard();
+                this.bindTouch();
+                this.bindWheel();
+                this.bindButtons();
+                this.show(0);
+            }
+
+            bindStageScale() {
+                const fit = () => {
+                    const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+                    const x = (window.innerWidth - 1920 * factor) / 2;
+                    const y = (window.innerHeight - 1080 * factor) / 2;
+                    this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+                };
+                fit();
+                window.addEventListener('resize', fit);
+            }
+
+            bindKeyboard() {
+                document.addEventListener('keydown', (event) => {
+                    if (event.target.isContentEditable) return;
+                    const keys = {
+                        ArrowRight: 1, ArrowDown: 1, PageDown: 1, ' ': 1,
+                        ArrowLeft: -1, ArrowUp: -1, PageUp: -1,
+                    };
+                    if (event.key in keys) {
+                        event.preventDefault();
+                        this.show(this.current + keys[event.key]);
+                    } else if (event.key === 'Home') {
+                        this.show(0);
+                    } else if (event.key === 'End') {
+                        this.show(this.slides.length - 1);
+                    }
+                });
+            }
+
+            bindTouch() {
+                let startX = 0;
+                this.stage.addEventListener('touchstart', (event) => { startX = event.changedTouches[0].clientX; }, { passive: true });
+                this.stage.addEventListener('touchend', (event) => {
+                    const delta = event.changedTouches[0].clientX - startX;
+                    if (Math.abs(delta) > 60) this.show(this.current + (delta < 0 ? 1 : -1));
+                }, { passive: true });
+            }
+
+            bindWheel() {
+                this.stage.addEventListener('wheel', (event) => {
+                    const now = Date.now();
+                    if (now - this.lastWheel < 700) return;
+                    if (Math.abs(event.deltaY) < 12) return;
+                    this.lastWheel = now;
+                    this.show(this.current + (event.deltaY > 0 ? 1 : -1));
+                }, { passive: true });
+            }
+
+            bindButtons() {
+                document.getElementById('prevSlide').addEventListener('click', () => this.show(this.current - 1));
+                document.getElementById('nextSlide').addEventListener('click', () => this.show(this.current + 1));
+            }
+
+            show(index) {
+                this.current = Math.max(0, Math.min(index, this.slides.length - 1));
+                this.slides.forEach((slide, i) => {
+                    const active = i === this.current;
+                    slide.classList.toggle('active', active);
+                    slide.classList.toggle('visible', active);
+                });
+                const number = String(this.current + 1).padStart(2, '0');
+                this.counter.textContent = `${number} / ${this.slides.length}`;
+                document.getElementById('prevSlide').disabled = this.current === 0;
+                document.getElementById('nextSlide').disabled = this.current === this.slides.length - 1;
+            }
+        }
+
+        /* ===========================================
+           EDICIÓN EN LÍNEA: hover diferido, tecla E y guardado local
+           =========================================== */
+        class InlineEditor {
+            constructor() {
+                this.isActive = false;
+                this.storageKey = 'frutas-slides-texto';
+                this.nodes = Array.from(document.querySelectorAll('[data-editable]'));
+                this.toggle = document.getElementById('editToggle');
+                this.hotzone = document.getElementById('editHotzone');
+                this.hideTimer = null;
+                this.bind();
+                this.restore();
+            }
+
+            bind() {
+                this.toggle.addEventListener('click', () => this.toggleMode());
+                this.hotzone.addEventListener('click', () => this.toggleMode());
+                this.hotzone.addEventListener('mouseenter', () => this.revealToggle());
+                this.hotzone.addEventListener('mouseleave', () => this.scheduleHide());
+                this.toggle.addEventListener('mouseenter', () => this.revealToggle());
+                this.toggle.addEventListener('mouseleave', () => this.scheduleHide());
+                document.addEventListener('keydown', (event) => {
+                    if ((event.key === 'e' || event.key === 'E') && !event.target.isContentEditable) {
+                        this.toggleMode();
+                    }
+                    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+                        event.preventDefault();
+                        this.exportFile();
+                    }
+                });
+            }
+
+            revealToggle() {
+                window.clearTimeout(this.hideTimer);
+                this.toggle.classList.add('show');
+            }
+
+            scheduleHide() {
+                this.hideTimer = window.setTimeout(() => {
+                    if (!this.isActive) this.toggle.classList.remove('show');
+                }, 400);
+            }
+
+            toggleMode() {
+                this.isActive = !this.isActive;
+                document.body.classList.toggle('editing', this.isActive);
+                this.toggle.classList.toggle('active', this.isActive);
+                this.nodes.forEach((node) => { node.contentEditable = String(this.isActive); });
+                if (!this.isActive) this.save();
+            }
+
+            save() {
+                const text = this.nodes.map((node) => node.innerHTML);
+                window.localStorage.setItem(this.storageKey, JSON.stringify(text));
+            }
+
+            restore() {
+                try {
+                    const saved = JSON.parse(window.localStorage.getItem(this.storageKey) || 'null');
+                    if (Array.isArray(saved) && saved.length === this.nodes.length) {
+                        this.nodes.forEach((node, i) => { node.innerHTML = saved[i]; });
+                    }
+                } catch (error) {
+                    window.localStorage.removeItem(this.storageKey);
+                }
+            }
+
+            exportFile() {
+                this.save();
+                const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'clasificador-frutas.html';
+                link.click();
+                URL.revokeObjectURL(link.href);
+            }
+        }
+
+        new SlidePresentation();
+        new InlineEditor();
+    </script>
+</body>
+</html>
