@@ -62,7 +62,9 @@ La confusión más frecuente fue pera clasificada como manzana (51 imágenes). T
 
 La prueba real obtuvo **0,5375 (53,8 %), con 43 aciertos en 80 imágenes**. La evaluación reportó el estado `ok` y cubrió las ocho clases con diez imágenes por clase. La prueba oficial obtuvo **0,9938 (99,38 %)** sobre **17 487 imágenes** de Fruits-360. [Métricas de ambas pruebas](../ml_training/reports/metrics.json)
 
-El equipo descargó de internet las imágenes de `data/real_test/`. La evaluación con fotos propias que preveía el plan queda sin medir. Se reemplazaron las imágenes con marca de agua de un banco de imágenes y todos los archivos de la muestra están en formatos admitidos. [Resumen de evaluación](../ml_training/reports/summary.md)
+El equipo descargó de internet las imágenes de `data/real_test/`. La evaluación con fotos propias que preveía el plan queda sin medir. Se reemplazaron las imágenes con marca de agua de un banco de imágenes y todos los archivos de la muestra estaban en formatos admitidos. [Resumen de evaluación](../ml_training/reports/summary.md)
+
+Las imágenes evaluadas se retiraron del repositorio por proceder de internet y el resultado se conserva como registro histórico. Si se ejecuta `evaluate.py` sin fotos en `data/real_test/<clase>/`, la prueba real vuelve a `pendiente` y ese estado reemplaza el resultado en `metrics.json` y `summary.md`, por lo que para medir con fotos propias hay que agregarlas antes de volver a evaluar. [Instrucciones para agregar las fotos](../data/real_test/README.md)
 
 | Clase | Aciertos / evaluadas | Precisión | Recall | F1 | Predicciones erróneas |
 | --- | ---: | ---: | ---: | ---: | --- |
